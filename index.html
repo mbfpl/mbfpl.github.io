@@ -685,7 +685,7 @@
     // 2B. PERMANENT GOOGLE APPS SCRIPT URL (Paste your Web App URL below)
     // =========================================================================
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyJuj5DenlR8w48B2bU4FuYRD8FqNuOkNTKgOs7yFvn2XqIV_dUW6AYkGpVGP2G1Owm/exec';
-    const AUTO_REFRESH_MS = 60 * 60 * 1000; // Auto-refresh every 1 hour
+    const AUTO_REFRESH_MS = 30 * 1000; // Lightweight meta check every 30 seconds
 
     let DB = JSON.parse(JSON.stringify(SAMPLE_DATA));
     let selectedItemCode = null;
@@ -1329,41 +1329,135 @@
       loadingOverlay.classList.add('hidden');
     }
 
-    async function loadLiveData(url, showLoader = false) {
-      if (showLoader) showLoadingScreen();
+    const SLICE_KEYS = ['catalog', 'indents', 'grn2627', 'grn2526', 'grn2425', 'issues', 'stock'];
+
+    function openTrackerDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error('IndexedDB unavailable'));
+        const req = indexedDB.open('mbfpl_tracker_db', 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('slices')) db.createObjectStore('slices');
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function idbGet(key) {
       try {
-      if (!url || !url.startsWith('https://')) {
-        throw new Error('Please enter a valid https:// Google Apps Script Web App URL.');
-      }
-      let fetchUrl = url;
-      if (authCreds && authCreds.user && authCreds.pass) {
-        const sep = url.includes('?') ? '&' : '?';
-        fetchUrl = `${url}${sep}user=${encodeURIComponent(authCreds.user)}&pass=${encodeURIComponent(authCreds.pass)}`;
-      }
-      const res = await fetch(fetchUrl);
-      if (!res.ok) throw new Error(`HTTP ${res.status} while fetching Google Sheets API`);
-      const json = await res.json();
-      if (json && json.error === 'UNAUTHORIZED') {
-        throw new Error('Invalid username or password.');
-      }
-      if (!json || !Array.isArray(json.catalog)) {
-        throw new Error('Invalid JSON structure returned by Apps Script.');
-      }
+        const db = await openTrackerDB();
+        return await new Promise((resolve) => {
+          const tx = db.transaction('slices', 'readonly');
+          const req = tx.objectStore('slices').get(key);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch { return null; }
+    }
+
+    async function idbSet(key, val) {
+      try {
+        const db = await openTrackerDB();
+        await new Promise((resolve) => {
+          const tx = db.transaction('slices', 'readwrite');
+          tx.objectStore('slices').put(val, key);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        });
+      } catch {}
+    }
+
+    function applySlicesToDB(slices) {
       DB = {
-        catalog: json.catalog || [],
-        indents: json.indents || [],
-        grns: json.grns || [],
-        issues: json.issues || [],
-        stock: json.stock || []
+        catalog: slices.catalog || [],
+        indents: slices.indents || [],
+        grns: [
+          ...(slices.grn2627 || []),
+          ...(slices.grn2526 || []),
+          ...(slices.grn2425 || [])
+        ],
+        issues: slices.issues || [],
+        stock: slices.stock || []
       };
-      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      setBadge(true, `Live (${DB.catalog.length} items • ${nowStr})`);
       renderMiniViews();
       if (selectedItemCode) selectMaterial(selectedItemCode);
       if (activePage === 'issues-person') {
         if (selectedPerson) selectPerson(selectedPerson);
         else renderPeopleDirectory();
       }
+    }
+
+    function buildGasUrl(baseUrl, paramsObj) {
+      const sep = baseUrl.includes('?') ? '&' : '?';
+      const qs = Object.entries(paramsObj)
+        .filter(([, v]) => v !== undefined && v !== null && v !== '')
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+        .join('&');
+      return `${baseUrl}${sep}${qs}`;
+    }
+
+    async function loadLiveData(url, showLoader = false) {
+      if (!url || !url.startsWith('https://')) {
+        throw new Error('Please enter a valid https:// Google Apps Script Web App URL.');
+      }
+
+      // 1. Load cached slices from IndexedDB immediately for <1s repeat opens
+      const localSlices = {};
+      let localMeta = (await idbGet('meta')) || {};
+      let hasAllLocal = true;
+      for (const k of SLICE_KEYS) {
+        const cached = await idbGet(k);
+        if (Array.isArray(cached)) localSlices[k] = cached;
+        else hasAllLocal = false;
+      }
+
+      if (hasAllLocal) {
+        applySlicesToDB(localSlices);
+        setBadge(true, `Cached (${DB.catalog.length} items) • Checking...`);
+      } else if (showLoader) {
+        showLoadingScreen();
+      }
+
+      try {
+        const authParams = (authCreds && authCreds.user && authCreds.pass)
+          ? { user: authCreds.user, pass: authCreds.pass }
+          : {};
+
+        // 2. Lightweight meta check (<200ms)
+        const metaRes = await fetch(buildGasUrl(url, { action: 'meta', ...authParams }));
+        if (!metaRes.ok) throw new Error(`HTTP ${metaRes.status} while checking sheet status`);
+        const metaJson = await metaRes.json();
+        if (metaJson && metaJson.error === 'UNAUTHORIZED') {
+          throw new Error('Invalid username or password.');
+        }
+
+        const remoteMeta = (metaJson && metaJson.meta) ? metaJson.meta : {};
+        const changedKeys = SLICE_KEYS.filter(k => !Array.isArray(localSlices[k]) || !remoteMeta[k] || Number(remoteMeta[k]) > Number(localMeta[k] || 0));
+
+        // 3. Download ONLY changed slices
+        if (changedKeys.length > 0) {
+          const getRes = await fetch(buildGasUrl(url, { action: 'get', keys: changedKeys.join(','), ...authParams }));
+          if (!getRes.ok) throw new Error(`HTTP ${getRes.status} while fetching updated sheets`);
+          const getJson = await getRes.json();
+          if (getJson && getJson.error === 'UNAUTHORIZED') {
+            throw new Error('Invalid username or password.');
+          }
+          const newData = (getJson && getJson.data) ? getJson.data : {};
+          const updatedMeta = (getJson && getJson.meta) ? getJson.meta : remoteMeta;
+
+          for (const k of changedKeys) {
+            if (Array.isArray(newData[k])) {
+              localSlices[k] = newData[k];
+              await idbSet(k, newData[k]);
+            }
+          }
+          await idbSet('meta', updatedMeta);
+          applySlicesToDB(localSlices);
+        }
+
+        const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        setBadge(true, `Live (${DB.catalog.length} items • ${nowStr})`);
       } finally {
         if (showLoader) hideLoadingScreen();
       }
@@ -1373,7 +1467,7 @@
       if (autoRefreshTimer) clearInterval(autoRefreshTimer);
       if (!gasUrl) return;
       autoRefreshTimer = setInterval(() => {
-        if (gasUrl) loadLiveData(gasUrl).catch(() => {});
+        if (gasUrl && authCreds) loadLiveData(gasUrl, false).catch(() => {});
       }, AUTO_REFRESH_MS);
     }
 

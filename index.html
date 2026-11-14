@@ -1048,6 +1048,11 @@
     function parseDateTs(str) {
       const s = String(str || '').trim();
       if (!s) return 0;
+      const mIso = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+      if (mIso) {
+        const dt = new Date(Number(mIso[1]), Number(mIso[2]) - 1, Number(mIso[3])).getTime();
+        return Number.isFinite(dt) ? dt : 0;
+      }
       const m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})$/);
       if (!m) return 0;
       let d = Number(m[1]), mo = Number(m[2]) - 1, y = Number(m[3]);
@@ -1056,54 +1061,69 @@
       return Number.isFinite(dt) ? dt : 0;
     }
 
-    function buildRepeatMap() {
+    function getSheetRepeatCounts(rows) {
       const counts = {};
-      const bump = (code) => {
-        const k = normCode(code);
+      for (const r of rows) {
+        const k = normCode(r.code);
         if (k) counts[k] = (counts[k] || 0) + 1;
-      };
-      DB.indents.forEach(r => bump(r.code));
-      DB.grns.forEach(r => bump(r.code));
-      DB.issues.forEach(r => bump(r.code));
+      }
       return counts;
     }
 
-    function sortLatestFrequent(rows, counts) {
-      return [...rows].sort((a, b) => {
-        const multiA = (counts[normCode(a.code)] || 0) >= 2 ? 1 : 0;
-        const multiB = (counts[normCode(b.code)] || 0) >= 2 ? 1 : 0;
-        if (multiB !== multiA) return multiB - multiA;
-        const tsDiff = parseDateTs(b.date) - parseDateTs(a.date);
-        if (tsDiff !== 0) return tsDiff;
-        return (counts[normCode(b.code)] || 0) - (counts[normCode(a.code)] || 0);
-      });
+    // Picks up to `limit` DIFFERENT items' latest entry, prioritizing items repeated 2+ times in that sheet
+    function pickDistinctLatestRepeated(rows, limit = 5) {
+      const counts = getSheetRepeatCounts(rows);
+      const indexed = rows.map((r, idx) => ({ r, idx, ts: parseDateTs(r.date) }));
+      indexed.sort((a, b) => (b.ts - a.ts) || (b.idx - a.idx));
+
+      const picked = [];
+      const seen = new Set();
+
+      // Pass 1: latest entry for each distinct item repeated >= 2 times in this sheet
+      for (const { r } of indexed) {
+        const k = normCode(r.code);
+        if (!k || seen.has(k)) continue;
+        if ((counts[k] || 0) >= 2) {
+          seen.add(k);
+          picked.push({ ...r, _sheetCount: counts[k] });
+          if (picked.length >= limit) return picked;
+        }
+      }
+
+      // Pass 2: fill remaining slots with latest distinct items if fewer than `limit` repeat items exist
+      for (const { r } of indexed) {
+        const k = normCode(r.code);
+        if (!k || seen.has(k)) continue;
+        seen.add(k);
+        picked.push({ ...r, _sheetCount: counts[k] || 1 });
+        if (picked.length >= limit) break;
+      }
+      return picked;
     }
 
     function renderMiniViews() {
       const grid = document.getElementById('mini-views-grid');
-      const counts = buildRepeatMap();
 
-      const repeatBadge = (code) => {
-        const c = counts[normCode(code)] || 0;
-        return c >= 2 ? `<span class="ml-1 px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 text-[10px] font-semibold" title="Total transactions across Indents, GRNs & Issues">${c}x</span>` : '';
+      const repeatBadge = (r) => {
+        const c = r._sheetCount || 0;
+        return c >= 2 ? `<span class="ml-1 px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 text-[10px] font-semibold" title="Repeated ${c} times in this sheet">${c}x</span>` : '';
       };
 
-      const topCatalog = [...DB.catalog].sort((a, b) => (counts[normCode(b.code)] || 0) - (counts[normCode(a.code)] || 0));
-      const latestIndents = sortLatestFrequent(DB.indents, counts);
-      const latestGrn26 = sortLatestFrequent(DB.grns.filter(g => g.fy === 'GRN 26-27'), counts);
-      const latestGrn25 = sortLatestFrequent(DB.grns.filter(g => g.fy === 'GRN 25-26'), counts);
-      const latestGrn24 = sortLatestFrequent(DB.grns.filter(g => g.fy === 'GRN 24-25'), counts);
-      const latestIssues = sortLatestFrequent(DB.issues, counts);
-      const activeStock = [...DB.stock].sort((a, b) => (counts[normCode(b.code)] || 0) - (counts[normCode(a.code)] || 0));
+      const latestIndents = pickDistinctLatestRepeated(DB.indents, 5);
+      const latestGrn26 = pickDistinctLatestRepeated(DB.grns.filter(g => g.fy === 'GRN 26-27'), 5);
+      const latestGrn25 = pickDistinctLatestRepeated(DB.grns.filter(g => g.fy === 'GRN 25-26'), 5);
+      const latestGrn24 = pickDistinctLatestRepeated(DB.grns.filter(g => g.fy === 'GRN 24-25'), 5);
+      const latestIssues = pickDistinctLatestRepeated(DB.issues, 5);
+      const latestStock = pickDistinctLatestRepeated(DB.stock, 5);
 
       const configs = [
         {
           def: SHEET_DEFS[0],
-          rows: topCatalog.slice(0, 5),
+          rows: DB.catalog.slice(0, 5),
           count: DB.catalog.length,
           cols: ['Item Code', 'Description', 'Category', 'UOM'],
           mapRow: r => [
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             escapeHtml(r.desc),
             escapeHtml(r.category),
             escapeHtml(r.uom)
@@ -1116,7 +1136,7 @@
           cols: ['Indent', 'Item Code', 'Qty', 'PO No', 'Status'],
           mapRow: r => [
             `${escapeHtml(r.indentNo)} <span class="text-slate-400">(${escapeHtml(r.date)})</span>`,
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `${formatNum(r.qty)} ${escapeHtml(r.uom)}`,
             `<span class="font-mono-code">${escapeHtml(r.poNo || '-')}</span>`,
             statusBadge(r.status)
@@ -1129,7 +1149,7 @@
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
             `#${escapeHtml(r.grnNo)}`,
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
             `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
@@ -1142,7 +1162,7 @@
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
             `#${escapeHtml(r.grnNo)}`,
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
             `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
@@ -1155,7 +1175,7 @@
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
             `#${escapeHtml(r.grnNo)}`,
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
             `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
@@ -1168,7 +1188,7 @@
           cols: ['MIR / Date', 'Item Code', 'Qty', 'Dept', 'Issued To'],
           mapRow: r => [
             `#${escapeHtml(r.mirNo)} <span class="text-slate-400">(${escapeHtml(r.date)})</span>`,
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `${formatNum(r.qty)} ${escapeHtml(r.uom)}`,
             escapeHtml(r.dept),
             escapeHtml(r.issuedTo)
@@ -1176,12 +1196,12 @@
         },
         {
           def: SHEET_DEFS[6],
-          rows: activeStock.slice(0, 5),
+          rows: latestStock,
           count: DB.stock.length,
           cols: ['Sub-Sheet', 'Item Code', 'Description', 'Stock'],
           mapRow: r => [
             escapeHtml(r.tab),
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `<span class="truncate max-w-[150px] inline-block align-bottom">${escapeHtml(r.desc)}</span>`,
             `<span class="font-bold text-emerald-700">${formatNum(r.closing)} ${escapeHtml(r.uom)}</span>`
           ]

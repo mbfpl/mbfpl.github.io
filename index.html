@@ -31,14 +31,12 @@
   <!-- Login Screen Overlay -->
   <div id="login-overlay" class="fixed inset-0 z-[110] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="max-w-sm w-full bg-white rounded-3xl shadow-2xl border border-slate-200 p-7">
-      <div class="flex items-center gap-3 mb-5">
-        <div class="w-11 h-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
-          MT
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="bg-white rounded-2xl px-4 py-2 border border-slate-100 shadow-sm mb-3">
+          <img src="data:image/jpeg;base64,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" alt="MASH Bio Fuels Logo" class="h-14 w-auto object-contain mx-auto" />
         </div>
-        <div>
-          <h2 class="text-lg font-bold text-slate-900 leading-tight">MASH Bio Fuels</h2>
-          <p class="text-xs text-slate-500">Material &amp; Inventory Portal Sign In</p>
-        </div>
+        <h2 class="text-lg font-bold text-slate-900 leading-tight">Material &amp; Inventory Portal</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Sign in to access Indent, GRN, Issue &amp; Stock</p>
       </div>
       <form id="login-form" class="space-y-4">
         <div>
@@ -63,14 +61,14 @@
   </div>
 
   <!-- Full-Screen Animated Loading Overlay -->
-  <div id="loading-overlay" class="hidden fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6 transition-opacity duration-300">
+  <div id="loading-overlay" class="hidden fixed inset-0 z-[120] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6 transition-opacity duration-300">
     <div class="max-w-sm w-full bg-slate-900 border border-slate-800 rounded-3xl p-7 text-center shadow-2xl">
-      <div class="relative w-16 h-16 mx-auto mb-5">
+      <div class="bg-white rounded-2xl px-4 py-2 inline-block mb-5 shadow-md">
+        <img src="data:image/jpeg;base64,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" alt="MASH Logo" class="h-10 w-auto object-contain mx-auto" />
+      </div>
+      <div class="relative w-12 h-12 mx-auto mb-4">
         <div class="absolute inset-0 rounded-full border-4 border-slate-800"></div>
-        <div class="absolute inset-0 rounded-full border-4 border-t-indigo-500 border-r-emerald-400 border-b-transparent border-l-transparent animate-spin-slow"></div>
-        <div class="absolute inset-2 rounded-full bg-indigo-600/20 flex items-center justify-center font-bold text-indigo-300 text-sm tracking-wide">
-          MT
-        </div>
+        <div class="absolute inset-0 rounded-full border-4 border-t-orange-500 border-r-indigo-400 border-b-transparent border-l-transparent animate-spin-slow"></div>
       </div>
       <h2 class="text-base font-bold text-white tracking-tight">Syncing Live Inventory</h2>
       <p id="loading-step-text" class="text-xs text-slate-400 mt-1.5">Connecting to your 7 Google Sheets...</p>
@@ -92,10 +90,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div class="flex items-center gap-3">
-          <button id="btn-home" type="button" class="flex items-center gap-2.5 text-left group">
-            <div class="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:bg-indigo-700 transition">
-              MT
-            </div>
+          <button id="btn-home" type="button" class="flex items-center gap-3 text-left group">
+            <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gIoSUNDX1BST0ZJTEUAAQEAAAIYAAAAAAIQAABtbnRyUkdCIFhZWiAAAAAAAAAAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAAHRyWFlaAAABZAAAABRnWFlaAAABeAAAABRiWFlaAAABjAAAABRyVFJDAAABoAAAAChnVFJDAAABoAAAAChiVFJDAAABoAAAACh3dHB0AAAByAAAABRjcHJ0AAAB3AAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAFgAAAAcAHMAUgBHAEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFhZWiAAAAAAAABvogAAOPUAAAOQWFlaIAAAAAAAAGKZAAC3hQAAGNpYWVogAAAAAAAAJKAAAA+EAAC2z3BhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABYWVogAAAAAAAA9tYAAQAAAADTLW1sdWMAAAAAAAAAAQAAAAxlblVTAAAAIAAAABwARwBvAG8AZwBsAGUAIABJAG4AYwAuACAAMgAwADEANv/bAEMACAYGBwYFCAcHBwkJCAoMFA0MCwsMGRITDxQdGh8eHRocHCAkLicgIiwjHBwoNyksMDE0NDQfJzk9ODI8LjM0Mv/bAEMBCQkJDAsMGA0NGDIhHCEyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMv/AABEIAMYAxgMBIgACEQEDEQH/xAAbAAEAAwEBAQEAAAAAAAAAAAAABQYHBAIBA//EADoQAAIBAwIDBQUGAwkAAAAAAAABAgMEEQUGBxIhEzFBUYEUMmFxkSI2dKGxtCNCchYzNVJUssHR4f/EABgBAQADAQAAAAAAAAAAAAAAAAACBAUD/8QAIBEBAAICAgEFAAAAAAAAAAAAAAMEAQIRMSEFQXHB8P/aAAwDAQACEQMRAD8A38AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfGctxfW9vaO5qVY9ilnmTzn5HNqmo1rCdFQs514VHytwfu/kU64vra0o3NjbwdzRnU5nKo3hY8ksfXxKs1jEa5WqbTeV/jWhJU2pxan7rz39M9PM/VFGsNToXV9RuJU6kK1rRapUKbzGeE+i8U8P49xbNNu6t9aKvVt3Qcn0g3l48+4nDPrJ0hPW2h7c2pXtxb6zotvTmo0rqvUhVjhPmSozkvl1iiXILWvvFtv8VW/b1CrcXbu5s9EsJW1xVoylctN05uLf2X5HdWaMCjcNN1PXtE9juqrnf2aUZOXfOn/LL4vwf/p08Qt0f2c0CUbefLfXeadBrvj/AJpei/NoC4AzDg/eXV5Q1Z3NzWrcs6XK6tRyx0l3ZJziTuCWhbYqU7er2d5ePsaTT6pfzSXp0z5tAXMGJ7A1/UdI3XS07WLiv2N9SjyqvNyxKSUqbWe7OcevXuNU3Pq8tC23falCKlOjD7CfdzNqKz8MtATAMR2/oW4N/UbnUrncNWko1eRRcpS64T6RTSiuqLltHam4tva5L2zWJ3Wmdk8QU2055WE4y93xeV5AXwGQa7f3kOM9rbQu68aDuLdOkqrUWnGOenca9LufyA+gx3hdqF5c71v6dxd16tONrUahUquSX8SHXDZsQAAAAAAAAAAAQOpQuKN4q09ShTt5JwjRksZbXT59SgyjKM3GacXF4aZp15plrfTpzuKXaSp9YZbx9CrXljOrp1fUNRsXGtzpwVJ8r5X5rr+mTMtwbbZ5w2fT7WseOM/HshNLjJ6lbuL5VCam5N9IxXVt+hetFpXKpyrVdQV3Sm8wxHovX/gjrTSp291bRpWKVlc0sV+frNNpvDfh4dxP2dlQsKPY20HCGc4y3+pOpBnTtyv2tZc+Pr9hGa194tt/iq37eoVHjL/gWnfin/tZbta+8W2/xVb9vUIniJtnUNzaXaW+n9lz0q3PLtJ8qxho0GWz64tLnY93oG5rCDdndW1J1qcZPrJwTnF/1e8vjnyOijSq8QdwarrdzCUdNsbefZU38Ivkj885k/p4mmS25S1DZdtoWpL3bWnSnKDzyzjFLmi35NHqw23baLtWto2n5fNSqJTqNZnOSfV49PRAUfgt/cax/VS/SRXd76/a6xv2nG6qSel2NRUn2a5nJJ5njzbeV8ki47Q2luDbGi61TUbZ3t1CKtsVeikk1lvHhnPoe9j8PVpNO7q69a2d1cVZJU1KKqqMV3vqu9t/kBSd/bm0jcN3YX+k+0U7q3XJJ1Kaj9lPMWmm+55+pq+kXlpvLZtKpdRhOndUXTuYJ45ZLpL5dVleh+mo7Q0S+025toaVY0p1acowqU7eEXCTXRppZWGVDbWydxWGharot1c0ba3vYJwrUp87hLomsdOko9H8gOG64V6zpVd3G3dalFp5UZTlSnjy5o9H+R62zvTcOn7rp7d3Cu2lOapOUkuenJrMXldJJ5X1PtLbfErSoezWWrU6tCPSDdZSwvD31lfIkdq8PtQoa+tf3FeKvexlzwpxlzZljClKXw8Evh8gKnvi1uL7ivO1tK3Y3FadCFOplx5JOEcPK6r0Jp8Pd7Jfejw/1db/AKJTVdmarecS6Ov0uw9ihWozfNP7WIqKfTHwNFfVMDE+EMZR3pfRm8yjZVE35/xIG2mb7E2Tq23dzXeoXyodhWoTpx7OfM8ucZd2PJM0gAAAAAAAAAAAB5lFSWJLKfemj0AAAAj7zTVeahp106rh7FVnUUUs8/NTlDGfD3s+hIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//9k=" alt="MASH Logo" class="h-10 w-auto object-contain rounded-lg border border-slate-100 bg-white px-1.5 py-0.5 shadow-sm group-hover:shadow transition" />
             <div>
               <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">Material &amp; Inventory Tracker</h1>
               <p class="text-xs text-slate-500">Indent &bull; GRN &bull; Daily Issue &bull; Daily Stock &bull; Master Code</p>
@@ -104,6 +100,14 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
+          <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 mr-1">
+            <button id="nav-materials" type="button" class="px-3 py-1 rounded-lg text-xs font-semibold bg-white text-indigo-700 shadow-sm transition">
+              Material Tracker
+            </button>
+            <button id="nav-issues-person" type="button" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
+              Issue by Person
+            </button>
+          </div>
           <span id="data-source-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
             Sample Snapshot
@@ -121,6 +125,7 @@
       </div>
 
       <!-- Dual Synchronized Search Placeholders -->
+      <div id="material-search-bar">
       <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
         <!-- Material Code Input -->
         <div class="md:col-span-5 relative">
@@ -170,6 +175,41 @@
         <button type="button" data-quick-code="HDR0-000-000-0343" class="quick-chip px-2 py-0.5 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-mono-code transition">MS Bolt M16x125</button>
         <button type="button" data-quick-code="ARMPC-000-000-076" class="quick-chip px-2 py-0.5 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-mono-code transition">UREA</button>
         <button type="button" data-quick-code="ELE-000-0000-0122" class="quick-chip px-2 py-0.5 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-mono-code transition">CEILING FAN</button>
+      </div>
+      </div>
+
+      <!-- Person Issue Search Bar (Shown on Issue by Person page) -->
+      <div id="person-search-bar" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+          <div class="md:col-span-8 relative">
+            <label for="input-person" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Issued To (Person / Contractor Name)</label>
+            <div class="relative">
+              <input
+                id="input-person"
+                type="text"
+                autocomplete="off"
+                placeholder="Type person or contractor name (e.g. Shankar, Subaram, BNK, Prahallad)..."
+                class="w-full pl-3 pr-9 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition"
+              />
+              <button id="clear-person" type="button" title="Clear person search" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm font-bold px-1">&times;</button>
+            </div>
+            <div id="dropdown-person" class="hidden absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto dropdown-scroll divide-y divide-slate-100"></div>
+          </div>
+          <div class="md:col-span-3">
+            <label for="filter-person-fy" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Financial Year</label>
+            <select id="filter-person-fy" class="w-full py-2.5 px-3 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="ALL">All Years</option>
+              <option value="26-27">FY 2026-27</option>
+              <option value="25-26">FY 2025-26</option>
+              <option value="24-25">FY 2024-25</option>
+            </select>
+          </div>
+          <div class="md:col-span-1 flex md:pt-5">
+            <button id="btn-reset-person" type="button" class="w-full py-2.5 px-3 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition">
+              Reset
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -346,6 +386,88 @@
               </tr>
             </thead>
             <tbody id="tbody-stock" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ISSUE MATERIALS BY PERSON PAGE -->
+    <section id="issue-person-view" class="hidden space-y-6">
+      <!-- Person Detail Banner (when a person is selected) -->
+      <div id="person-detail-card" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-5">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <span class="inline-block text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 mb-1.5">Issued To</span>
+            <h2 id="person-detail-name" class="text-xl font-bold text-slate-900"></h2>
+            <p id="person-detail-depts" class="text-xs text-slate-500 mt-0.5"></p>
+          </div>
+          <button id="btn-back-people" type="button" class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+            &larr; All Recipients
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="p-3.5 rounded-xl bg-indigo-50/70 border border-indigo-200">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700">Unique MIR Slips</div>
+            <div id="pkpi-mirs" class="text-2xl font-bold text-indigo-900 mt-1">0</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700">Total Items Issued</div>
+            <div id="pkpi-lines" class="text-2xl font-bold text-amber-900 mt-1">0</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Distinct Materials</div>
+            <div id="pkpi-codes" class="text-2xl font-bold text-emerald-900 mt-1">0</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-100 border border-slate-200">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-600">Latest Issue Date</div>
+            <div id="pkpi-latest" class="text-lg font-bold text-slate-900 mt-1.5">-</div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto table-scroll border border-slate-200 rounded-xl">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                <th class="py-2.5 px-3 font-semibold">Date</th>
+                <th class="py-2.5 px-3 font-semibold">MIR No</th>
+                <th class="py-2.5 px-3 font-semibold">FY Sheet</th>
+                <th class="py-2.5 px-3 font-semibold">Material Code</th>
+                <th class="py-2.5 px-3 font-semibold">Item Description</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Qty</th>
+                <th class="py-2.5 px-3 font-semibold">UOM</th>
+                <th class="py-2.5 px-3 font-semibold">Department</th>
+                <th class="py-2.5 px-3 font-semibold">Cost Centre</th>
+                <th class="py-2.5 px-3 font-semibold">Recommended By</th>
+                <th class="py-2.5 px-3 font-semibold">Remark</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-person-issues" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- All Recipients Directory (when no person is selected) -->
+      <div id="person-directory-card" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Issued Materials — Recipients Directory</h2>
+            <p class="text-xs text-slate-500">Search any username/person above or click a recipient below to view all MIR numbers, dates, and items issued.</p>
+          </div>
+          <span id="people-total-badge" class="text-xs font-semibold text-slate-600"></span>
+        </div>
+        <div class="overflow-x-auto table-scroll">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                <th class="py-2.5 px-4 font-semibold">Issued To (Person / Contractor)</th>
+                <th class="py-2.5 px-4 font-semibold">Departments</th>
+                <th class="py-2.5 px-4 font-semibold text-right">MIR Slips</th>
+                <th class="py-2.5 px-4 font-semibold text-right">Items Issued</th>
+                <th class="py-2.5 px-4 font-semibold">Latest Issue Date</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-people-dir" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </div>
@@ -749,7 +871,7 @@
     clearCodeBtn.addEventListener('click', resetToHome);
     clearDescBtn.addEventListener('click', resetToHome);
     document.getElementById('btn-reset-all').addEventListener('click', resetToHome);
-    document.getElementById('btn-home').addEventListener('click', resetToHome);
+    document.getElementById('btn-home').addEventListener('click', () => { switchPage('materials'); resetToHome(); });
     document.getElementById('btn-back-home').addEventListener('click', resetToHome);
 
     document.querySelectorAll('.quick-chip').forEach(btn => {
@@ -917,17 +1039,65 @@
     // =========================================================================
     // 7. HOME MINI-VIEWS & DIRECT LINKS
     // =========================================================================
+    function parseDateTs(str) {
+      const s = String(str || '').trim();
+      if (!s) return 0;
+      const m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})$/);
+      if (!m) return 0;
+      let d = Number(m[1]), mo = Number(m[2]) - 1, y = Number(m[3]);
+      if (y < 100) y += 2000;
+      const dt = new Date(y, mo, d).getTime();
+      return Number.isFinite(dt) ? dt : 0;
+    }
+
+    function buildRepeatMap() {
+      const counts = {};
+      const bump = (code) => {
+        const k = normCode(code);
+        if (k) counts[k] = (counts[k] || 0) + 1;
+      };
+      DB.indents.forEach(r => bump(r.code));
+      DB.grns.forEach(r => bump(r.code));
+      DB.issues.forEach(r => bump(r.code));
+      return counts;
+    }
+
+    function sortLatestFrequent(rows, counts) {
+      return [...rows].sort((a, b) => {
+        const multiA = (counts[normCode(a.code)] || 0) >= 2 ? 1 : 0;
+        const multiB = (counts[normCode(b.code)] || 0) >= 2 ? 1 : 0;
+        if (multiB !== multiA) return multiB - multiA;
+        const tsDiff = parseDateTs(b.date) - parseDateTs(a.date);
+        if (tsDiff !== 0) return tsDiff;
+        return (counts[normCode(b.code)] || 0) - (counts[normCode(a.code)] || 0);
+      });
+    }
+
     function renderMiniViews() {
       const grid = document.getElementById('mini-views-grid');
+      const counts = buildRepeatMap();
+
+      const repeatBadge = (code) => {
+        const c = counts[normCode(code)] || 0;
+        return c >= 2 ? `<span class="ml-1 px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 text-[10px] font-semibold" title="Total transactions across Indents, GRNs & Issues">${c}x</span>` : '';
+      };
+
+      const topCatalog = [...DB.catalog].sort((a, b) => (counts[normCode(b.code)] || 0) - (counts[normCode(a.code)] || 0));
+      const latestIndents = sortLatestFrequent(DB.indents, counts);
+      const latestGrn26 = sortLatestFrequent(DB.grns.filter(g => g.fy === 'GRN 26-27'), counts);
+      const latestGrn25 = sortLatestFrequent(DB.grns.filter(g => g.fy === 'GRN 25-26'), counts);
+      const latestGrn24 = sortLatestFrequent(DB.grns.filter(g => g.fy === 'GRN 24-25'), counts);
+      const latestIssues = sortLatestFrequent(DB.issues, counts);
+      const activeStock = [...DB.stock].sort((a, b) => (counts[normCode(b.code)] || 0) - (counts[normCode(a.code)] || 0));
 
       const configs = [
         {
           def: SHEET_DEFS[0],
-          rows: DB.catalog.slice(0, 5),
+          rows: topCatalog.slice(0, 5),
           count: DB.catalog.length,
           cols: ['Item Code', 'Description', 'Category', 'UOM'],
           mapRow: r => [
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
             escapeHtml(r.desc),
             escapeHtml(r.category),
             escapeHtml(r.uom)
@@ -935,12 +1105,12 @@
         },
         {
           def: SHEET_DEFS[1],
-          rows: DB.indents.slice(0, 5),
+          rows: latestIndents.slice(0, 5),
           count: DB.indents.length,
           cols: ['Indent', 'Item Code', 'Qty', 'PO No', 'Status'],
           mapRow: r => [
             `${escapeHtml(r.indentNo)} <span class="text-slate-400">(${escapeHtml(r.date)})</span>`,
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
             `${formatNum(r.qty)} ${escapeHtml(r.uom)}`,
             `<span class="font-mono-code">${escapeHtml(r.poNo || '-')}</span>`,
             statusBadge(r.status)
@@ -948,12 +1118,12 @@
         },
         {
           def: SHEET_DEFS[2],
-          rows: DB.grns.filter(g => g.fy === 'GRN 26-27').slice(0, 5),
+          rows: latestGrn26.slice(0, 5),
           count: DB.grns.filter(g => g.fy === 'GRN 26-27').length,
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
             `#${escapeHtml(r.grnNo)}`,
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
             `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
@@ -961,12 +1131,12 @@
         },
         {
           def: SHEET_DEFS[3],
-          rows: DB.grns.filter(g => g.fy === 'GRN 25-26').slice(0, 5),
+          rows: latestGrn25.slice(0, 5),
           count: DB.grns.filter(g => g.fy === 'GRN 25-26').length,
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
             `#${escapeHtml(r.grnNo)}`,
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
             `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
@@ -974,12 +1144,12 @@
         },
         {
           def: SHEET_DEFS[4],
-          rows: DB.grns.filter(g => g.fy === 'GRN 24-25').slice(0, 5),
+          rows: latestGrn24.slice(0, 5),
           count: DB.grns.filter(g => g.fy === 'GRN 24-25').length,
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
             `#${escapeHtml(r.grnNo)}`,
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
             `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
@@ -987,12 +1157,12 @@
         },
         {
           def: SHEET_DEFS[5],
-          rows: DB.issues.slice(0, 5),
+          rows: latestIssues.slice(0, 5),
           count: DB.issues.length,
           cols: ['MIR / Date', 'Item Code', 'Qty', 'Dept', 'Issued To'],
           mapRow: r => [
             `#${escapeHtml(r.mirNo)} <span class="text-slate-400">(${escapeHtml(r.date)})</span>`,
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
             `${formatNum(r.qty)} ${escapeHtml(r.uom)}`,
             escapeHtml(r.dept),
             escapeHtml(r.issuedTo)
@@ -1000,12 +1170,12 @@
         },
         {
           def: SHEET_DEFS[6],
-          rows: DB.stock.slice(0, 5),
+          rows: activeStock.slice(0, 5),
           count: DB.stock.length,
           cols: ['Sub-Sheet', 'Item Code', 'Description', 'Stock'],
           mapRow: r => [
             escapeHtml(r.tab),
-            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r.code)}`,
             `<span class="truncate max-w-[150px] inline-block align-bottom">${escapeHtml(r.desc)}</span>`,
             `<span class="font-bold text-emerald-700">${formatNum(r.closing)} ${escapeHtml(r.uom)}</span>`
           ]
@@ -1147,6 +1317,10 @@
       setBadge(true, `Live (${DB.catalog.length} items • ${nowStr})`);
       renderMiniViews();
       if (selectedItemCode) selectMaterial(selectedItemCode);
+      if (activePage === 'issues-person') {
+        if (selectedPerson) selectPerson(selectedPerson);
+        else renderPeopleDirectory();
+      }
       } finally {
         if (showLoader) hideLoadingScreen();
       }
@@ -1211,6 +1385,209 @@
     });
 
     // =========================================================================
+    // 8B. ISSUE MATERIALS BY PERSON PAGE & USERNAME AUTOCOMPLETE
+    // =========================================================================
+    let activePage = 'materials'; // 'materials' | 'issues-person'
+    let selectedPerson = null;
+
+    const navMaterialsBtn = document.getElementById('nav-materials');
+    const navPersonBtn = document.getElementById('nav-issues-person');
+    const materialSearchBar = document.getElementById('material-search-bar');
+    const personSearchBar = document.getElementById('person-search-bar');
+    const issuePersonView = document.getElementById('issue-person-view');
+    const inputPerson = document.getElementById('input-person');
+    const dropdownPerson = document.getElementById('dropdown-person');
+    const clearPersonBtn = document.getElementById('clear-person');
+    const filterPersonFy = document.getElementById('filter-person-fy');
+
+    function switchPage(page) {
+      activePage = page;
+      const isMat = page === 'materials';
+      navMaterialsBtn.className = isMat
+        ? 'px-3 py-1 rounded-lg text-xs font-semibold bg-white text-indigo-700 shadow-sm transition'
+        : 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition';
+      navPersonBtn.className = !isMat
+        ? 'px-3 py-1 rounded-lg text-xs font-semibold bg-white text-indigo-700 shadow-sm transition'
+        : 'px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition';
+
+      materialSearchBar.classList.toggle('hidden', !isMat);
+      personSearchBar.classList.toggle('hidden', isMat);
+
+      if (isMat) {
+        issuePersonView.classList.add('hidden');
+        if (selectedItemCode) {
+          document.getElementById('item-detail-view').classList.remove('hidden');
+          document.getElementById('home-overview-view').classList.add('hidden');
+        } else {
+          document.getElementById('item-detail-view').classList.add('hidden');
+          document.getElementById('home-overview-view').classList.remove('hidden');
+        }
+      } else {
+        document.getElementById('item-detail-view').classList.add('hidden');
+        document.getElementById('home-overview-view').classList.add('hidden');
+        issuePersonView.classList.remove('hidden');
+        renderPeopleDirectory();
+      }
+    }
+
+    navMaterialsBtn.addEventListener('click', () => switchPage('materials'));
+    navPersonBtn.addEventListener('click', () => switchPage('issues-person'));
+
+    function getPeopleIndex() {
+      const map = new Map();
+      const fyFilter = filterPersonFy.value;
+      for (const r of DB.issues) {
+        if (fyFilter !== 'ALL' && !String(r.fy || '').includes(fyFilter)) continue;
+        const name = String(r.issuedTo || '').trim();
+        if (!name) continue;
+        const key = name.toUpperCase();
+        if (!map.has(key)) {
+          map.set(key, { name, count: 0, mirs: new Set(), depts: new Set(), latestDate: '', latestTs: 0 });
+        }
+        const entry = map.get(key);
+        entry.count++;
+        if (r.mirNo) entry.mirs.add(r.mirNo);
+        if (r.dept) entry.depts.add(r.dept);
+        const ts = parseDateTs(r.date);
+        if (ts >= entry.latestTs) {
+          entry.latestTs = ts;
+          entry.latestDate = r.date || entry.latestDate;
+        }
+      }
+      return Array.from(map.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    }
+
+    function renderPeopleDirectory() {
+      const people = getPeopleIndex();
+      document.getElementById('people-total-badge').textContent = `${people.length} recipient(s)`;
+      const tbody = document.getElementById('tbody-people-dir');
+      tbody.innerHTML = people.length ? people.slice(0, 100).map(p => `
+        <tr class="hover:bg-indigo-50/40 cursor-pointer" data-pick-person="${escapeHtml(p.name)}">
+          <td class="py-2.5 px-4 font-semibold text-indigo-700 hover:underline">${escapeHtml(p.name)}</td>
+          <td class="py-2.5 px-4 text-slate-600">${escapeHtml([...p.depts].join(', ') || '-')}</td>
+          <td class="py-2.5 px-4 text-right font-mono-code">${p.mirs.size}</td>
+          <td class="py-2.5 px-4 text-right font-semibold">${p.count}</td>
+          <td class="py-2.5 px-4 text-slate-600">${escapeHtml(p.latestDate || '-')}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" class="py-6 text-center text-slate-400">No issue records found for selected filter.</td></tr>`;
+
+      tbody.querySelectorAll('[data-pick-person]').forEach(row => {
+        row.addEventListener('click', () => selectPerson(row.getAttribute('data-pick-person')));
+      });
+    }
+
+    function selectPerson(name) {
+      selectedPerson = name;
+      inputPerson.value = name;
+      clearPersonBtn.classList.remove('hidden');
+      dropdownPerson.classList.add('hidden');
+
+      const fyFilter = filterPersonFy.value;
+      const rows = DB.issues
+        .filter(r => String(r.issuedTo || '').trim().toUpperCase() === name.trim().toUpperCase())
+        .filter(r => fyFilter === 'ALL' || String(r.fy || '').includes(fyFilter))
+        .sort((a, b) => parseDateTs(b.date) - parseDateTs(a.date));
+
+      const mirs = new Set(rows.map(r => r.mirNo).filter(Boolean));
+      const codes = new Set(rows.map(r => normCode(r.code)).filter(Boolean));
+      const depts = new Set(rows.map(r => r.dept).filter(Boolean));
+
+      document.getElementById('person-detail-name').textContent = name;
+      document.getElementById('person-detail-depts').textContent = depts.size ? `Departments: ${[...depts].join(', ')}` : '';
+      document.getElementById('pkpi-mirs').textContent = mirs.size;
+      document.getElementById('pkpi-lines').textContent = rows.length;
+      document.getElementById('pkpi-codes').textContent = codes.size;
+      document.getElementById('pkpi-latest').textContent = rows[0]?.date || '-';
+
+      const tbody = document.getElementById('tbody-person-issues');
+      tbody.innerHTML = rows.length ? rows.map(r => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2 px-3 whitespace-nowrap">${escapeHtml(r.date)}</td>
+          <td class="py-2 px-3 font-mono-code font-semibold">${escapeHtml(r.mirNo)}</td>
+          <td class="py-2 px-3 text-slate-500 whitespace-nowrap">${escapeHtml(r.fy)}</td>
+          <td class="py-2 px-3 whitespace-nowrap">
+            <button type="button" data-jump-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold">${escapeHtml(r.code)}</button>
+          </td>
+          <td class="py-2 px-3">${escapeHtml(r.desc)}</td>
+          <td class="py-2 px-3 text-right font-semibold text-amber-800">${formatNum(r.qty)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.uom)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.dept)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.costCentre)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.recBy)}</td>
+          <td class="py-2 px-3 text-slate-500">${escapeHtml(r.remark || '-')}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="11" class="py-6 text-center text-slate-400">No items issued to ${escapeHtml(name)} in this period.</td></tr>`;
+
+      tbody.querySelectorAll('[data-jump-code]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchPage('materials');
+          selectMaterial(btn.getAttribute('data-jump-code'));
+        });
+      });
+
+      document.getElementById('person-directory-card').classList.add('hidden');
+      document.getElementById('person-detail-card').classList.remove('hidden');
+    }
+
+    inputPerson.addEventListener('input', () => {
+      const q = inputPerson.value.trim().toLowerCase();
+      clearPersonBtn.classList.toggle('hidden', !q);
+      if (!q) {
+        dropdownPerson.classList.add('hidden');
+        dropdownPerson.innerHTML = '';
+        return;
+      }
+      const tokens = q.split(/\s+/).filter(Boolean);
+      const matches = getPeopleIndex().filter(p => tokens.every(t => p.name.toLowerCase().includes(t))).slice(0, 25);
+      if (!matches.length) {
+        dropdownPerson.innerHTML = `<div class="p-3 text-xs text-slate-500">No recipient found matching "<span class="font-semibold text-slate-700">${escapeHtml(inputPerson.value)}</span>".</div>`;
+      } else {
+        dropdownPerson.innerHTML = matches.map(p => `
+          <button type="button" data-select-person="${escapeHtml(p.name)}" class="w-full text-left px-3.5 py-2.5 hover:bg-indigo-50/80 transition flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-slate-900">${highlightText(p.name, inputPerson.value)}</div>
+              <div class="text-[11px] text-slate-500 truncate">${escapeHtml([...p.depts].join(', ') || 'All Departments')}</div>
+            </div>
+            <div class="shrink-0 text-right">
+              <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">${p.count} items</span>
+              <div class="text-[10px] text-slate-400 mt-0.5">${p.mirs.size} MIRs</div>
+            </div>
+          </button>
+        `).join('');
+      }
+      dropdownPerson.classList.remove('hidden');
+    });
+
+    dropdownPerson.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-select-person]');
+      if (btn) selectPerson(btn.getAttribute('data-select-person'));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#input-person') && !e.target.closest('#dropdown-person')) {
+        dropdownPerson.classList.add('hidden');
+      }
+    });
+
+    function resetPersonPage() {
+      selectedPerson = null;
+      inputPerson.value = '';
+      clearPersonBtn.classList.add('hidden');
+      dropdownPerson.classList.add('hidden');
+      document.getElementById('person-detail-card').classList.add('hidden');
+      document.getElementById('person-directory-card').classList.remove('hidden');
+      renderPeopleDirectory();
+    }
+
+    clearPersonBtn.addEventListener('click', resetPersonPage);
+    document.getElementById('btn-reset-person').addEventListener('click', resetPersonPage);
+    document.getElementById('btn-back-people').addEventListener('click', resetPersonPage);
+    filterPersonFy.addEventListener('change', () => {
+      if (selectedPerson) selectPerson(selectedPerson);
+      else renderPeopleDirectory();
+    });
+
+    // =========================================================================
     // 9. AUTHENTICATION & INITIALIZATION
     // =========================================================================
     const DEMO_USER = 'admin';
@@ -1233,22 +1610,32 @@
 
     async function completeLogin(user, pass) {
       authCreds = { user, pass };
-      if (gasUrl) {
-        await loadLiveData(gasUrl, true);
-        startAutoRefresh();
-      } else {
-        if (user !== DEMO_USER || pass !== DEMO_PASS) {
-          authCreds = null;
-          throw new Error('Invalid username or password.');
+      showLoadingScreen();
+      try {
+        if (gasUrl) {
+          await loadLiveData(gasUrl, false);
+          startAutoRefresh();
+        } else {
+          await new Promise(r => setTimeout(r, 450));
+          if (user !== DEMO_USER || pass !== DEMO_PASS) {
+            authCreds = null;
+            throw new Error('Invalid username or password.');
+          }
         }
+        try { sessionStorage.setItem('mash_mt_auth', JSON.stringify(authCreds)); } catch {}
+        loginOverlay.classList.add('hidden');
+      } finally {
+        hideLoadingScreen();
       }
-      try { sessionStorage.setItem('mash_mt_auth', JSON.stringify(authCreds)); } catch {}
-      loginOverlay.classList.add('hidden');
     }
 
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       loginError.classList.add('hidden');
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
+      const origText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing in...';
       const user = document.getElementById('login-user').value.trim();
       const pass = document.getElementById('login-pass').value;
       try {
@@ -1256,6 +1643,9 @@
       } catch (err) {
         loginError.textContent = err.message || 'Sign in failed.';
         loginError.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = origText;
       }
     });
 

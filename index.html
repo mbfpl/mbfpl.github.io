@@ -483,16 +483,22 @@
     // =========================================================================
     // 3. STATE & STORAGE
     // =========================================================================
+    // =========================================================================
+    // 2B. PERMANENT GOOGLE APPS SCRIPT URL (Paste your Web App URL below)
+    // =========================================================================
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyJuj5DenlR8w48B2bU4FuYRD8FqNuOkNTKgOs7yFvn2XqIV_dUW6AYkGpVGP2G1Owm/exec'; // <-- Paste your https://script.google.com/macros/s/.../exec URL here
+    const AUTO_REFRESH_MS = 60 * 60 * 1000; // Auto-refresh every 1 hour
+
     let DB = JSON.parse(JSON.stringify(SAMPLE_DATA));
     let selectedItemCode = null;
     let activeLedgerTab = 'indents';
-    let gasUrl = '';
+    let gasUrl = DEFAULT_GAS_URL;
+    let autoRefreshTimer = null;
 
     try {
-      gasUrl = localStorage.getItem('mash_material_tracker_gas_url') || '';
-    } catch (e) {
-      gasUrl = '';
-    }
+      const savedUrl = localStorage.getItem('mash_material_tracker_gas_url');
+      if (savedUrl) gasUrl = savedUrl;
+    } catch (e) {}
 
     // =========================================================================
     // 4. MATCHING & NORMALIZATION HELPERS
@@ -1030,9 +1036,18 @@
         issues: json.issues || [],
         stock: json.stock || []
       };
-      setBadge(true, `Live (${DB.catalog.length} items)`);
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setBadge(true, `Live (${DB.catalog.length} items • ${nowStr})`);
       renderMiniViews();
       if (selectedItemCode) selectMaterial(selectedItemCode);
+    }
+
+    function startAutoRefresh() {
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      if (!gasUrl) return;
+      autoRefreshTimer = setInterval(() => {
+        if (gasUrl) loadLiveData(gasUrl).catch(() => {});
+      }, AUTO_REFRESH_MS);
     }
 
     document.getElementById('btn-open-connect').addEventListener('click', () => {
@@ -1047,6 +1062,7 @@
 
     document.getElementById('btn-use-sample').addEventListener('click', () => {
       gasUrl = '';
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
       try { localStorage.removeItem('mash_material_tracker_gas_url'); } catch {}
       DB = JSON.parse(JSON.stringify(SAMPLE_DATA));
       setBadge(false, 'Sample Snapshot');
@@ -1064,6 +1080,7 @@
         await loadLiveData(url);
         gasUrl = url;
         try { localStorage.setItem('mash_material_tracker_gas_url', url); } catch {}
+        startAutoRefresh();
         modal.classList.add('hidden');
       } catch (err) {
         connectStatus.className = 'p-2.5 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-200';
@@ -1090,6 +1107,7 @@
     renderDirectLinks();
     if (gasUrl) {
       loadLiveData(gasUrl).catch(() => setBadge(false, 'Sample Snapshot'));
+      startAutoRefresh();
     }
   </script>
 </body>

@@ -1101,14 +1101,31 @@
       return picked;
     }
 
+    function buildGlobalRepeatMap() {
+      const counts = {};
+      const bump = (code) => {
+        const k = normCode(code);
+        if (k) counts[k] = (counts[k] || 0) + 1;
+      };
+      DB.indents.forEach(r => bump(r.code));
+      DB.grns.forEach(r => bump(r.code));
+      DB.issues.forEach(r => bump(r.code));
+      return counts;
+    }
+
     function renderMiniViews() {
       const grid = document.getElementById('mini-views-grid');
+      const globalCounts = buildGlobalRepeatMap();
 
       const repeatBadge = (r) => {
         const c = r._sheetCount || 0;
-        return c >= 2 ? `<span class="ml-1 px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 text-[10px] font-semibold" title="Repeated ${c} times in this sheet">${c}x</span>` : '';
+        return c >= 2 ? `<span class="ml-1 px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 text-[10px] font-semibold" title="Repeated ${c} times">${c}x</span>` : '';
       };
 
+      const topCatalog = [...DB.catalog]
+        .map(item => ({ ...item, _sheetCount: globalCounts[normCode(item.code)] || 0 }))
+        .sort((a, b) => b._sheetCount - a._sheetCount)
+        .slice(0, 5);
       const latestIndents = pickDistinctLatestRepeated(DB.indents, 5);
       const latestGrn26 = pickDistinctLatestRepeated(DB.grns.filter(g => g.fy === 'GRN 26-27'), 5);
       const latestGrn25 = pickDistinctLatestRepeated(DB.grns.filter(g => g.fy === 'GRN 25-26'), 5);
@@ -1119,7 +1136,7 @@
       const configs = [
         {
           def: SHEET_DEFS[0],
-          rows: DB.catalog.slice(0, 5),
+          rows: topCatalog,
           count: DB.catalog.length,
           cols: ['Item Code', 'Description', 'Category', 'UOM'],
           mapRow: r => [

@@ -16,9 +16,42 @@
     .table-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
     .table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     mark { background-color: #fef08a; color: #0f172a; padding: 0 2px; border-radius: 2px; }
+    @keyframes spin-slow { to { transform: rotate(360deg); } }
+    @keyframes progress-slide {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(0%); }
+      100% { transform: translateX(100%); }
+    }
+    .animate-spin-slow { animation: spin-slow 1.2s linear infinite; }
+    .animate-progress { animation: progress-slide 1.6s ease-in-out infinite; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Full-Screen Animated Loading Overlay -->
+  <div id="loading-overlay" class="hidden fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6 transition-opacity duration-300">
+    <div class="max-w-sm w-full bg-slate-900 border border-slate-800 rounded-3xl p-7 text-center shadow-2xl">
+      <div class="relative w-16 h-16 mx-auto mb-5">
+        <div class="absolute inset-0 rounded-full border-4 border-slate-800"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-t-indigo-500 border-r-emerald-400 border-b-transparent border-l-transparent animate-spin-slow"></div>
+        <div class="absolute inset-2 rounded-full bg-indigo-600/20 flex items-center justify-center font-bold text-indigo-300 text-sm tracking-wide">
+          MT
+        </div>
+      </div>
+      <h2 class="text-base font-bold text-white tracking-tight">Syncing Live Inventory</h2>
+      <p id="loading-step-text" class="text-xs text-slate-400 mt-1.5">Connecting to your 7 Google Sheets...</p>
+      <div class="mt-5 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+        <div class="h-full w-1/2 bg-gradient-to-r from-indigo-500 via-emerald-400 to-indigo-500 rounded-full animate-progress"></div>
+      </div>
+      <div class="mt-4 flex items-center justify-center gap-2 flex-wrap text-[10px] font-medium text-slate-400">
+        <span class="px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-300">Master Codes</span>
+        <span class="px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-300">Indents</span>
+        <span class="px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-300">GRNs</span>
+        <span class="px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-300">Daily Issue</span>
+        <span class="px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-300">Stock</span>
+      </div>
+    </div>
+  </div>
 
   <!-- Top Navigation & Dual Search Header -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
@@ -486,7 +519,7 @@
     // =========================================================================
     // 2B. PERMANENT GOOGLE APPS SCRIPT URL (Paste your Web App URL below)
     // =========================================================================
-    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyJuj5DenlR8w48B2bU4FuYRD8FqNuOkNTKgOs7yFvn2XqIV_dUW6AYkGpVGP2G1Owm/exec'; // <-- Paste your https://script.google.com/macros/s/.../exec URL here
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyJuj5DenlR8w48B2bU4FuYRD8FqNuOkNTKgOs7yFvn2XqIV_dUW6AYkGpVGP2G1Owm/exec';
     const AUTO_REFRESH_MS = 60 * 60 * 1000; // Auto-refresh every 1 hour
 
     let DB = JSON.parse(JSON.stringify(SAMPLE_DATA));
@@ -1019,7 +1052,36 @@
       }
     }
 
-    async function loadLiveData(url) {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingStepText = document.getElementById('loading-step-text');
+    let loadingStepTimer = null;
+
+    function showLoadingScreen() {
+      const steps = [
+        'Connecting to Google Apps Script...',
+        'Reading Material Code Master (22 sub-sheets)...',
+        'Loading Indents & PO Links...',
+        'Syncing GRNs (24-25, 25-26, 26-27)...',
+        'Fetching Daily Issues & Current Stock...'
+      ];
+      let idx = 0;
+      loadingStepText.textContent = steps[0];
+      loadingOverlay.classList.remove('hidden');
+      if (loadingStepTimer) clearInterval(loadingStepTimer);
+      loadingStepTimer = setInterval(() => {
+        idx = (idx + 1) % steps.length;
+        loadingStepText.textContent = steps[idx];
+      }, 1500);
+    }
+
+    function hideLoadingScreen() {
+      if (loadingStepTimer) clearInterval(loadingStepTimer);
+      loadingOverlay.classList.add('hidden');
+    }
+
+    async function loadLiveData(url, showLoader = false) {
+      if (showLoader) showLoadingScreen();
+      try {
       if (!url || !url.startsWith('https://')) {
         throw new Error('Please enter a valid https:// Google Apps Script Web App URL.');
       }
@@ -1040,6 +1102,9 @@
       setBadge(true, `Live (${DB.catalog.length} items • ${nowStr})`);
       renderMiniViews();
       if (selectedItemCode) selectMaterial(selectedItemCode);
+      } finally {
+        if (showLoader) hideLoadingScreen();
+      }
     }
 
     function startAutoRefresh() {
@@ -1106,7 +1171,7 @@
     renderMiniViews();
     renderDirectLinks();
     if (gasUrl) {
-      loadLiveData(gasUrl).catch(() => setBadge(false, 'Sample Snapshot'));
+      loadLiveData(gasUrl, true).catch(() => setBadge(false, 'Sample Snapshot'));
       startAutoRefresh();
     }
   </script>

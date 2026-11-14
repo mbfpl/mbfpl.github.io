@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MASH Bio Fuels — Material Code, Indent, GRN, Issue & Stock Tracker</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .font-mono-code { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
+    .dropdown-scroll::-webkit-scrollbar { width: 6px; }
+    .dropdown-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .table-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+    .table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    mark { background-color: #fef08a; color: #0f172a; padding: 0 2px; border-radius: 2px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Top Navigation & Dual Search Header -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-3">
+          <button id="btn-home" type="button" class="flex items-center gap-2.5 text-left group">
+            <div class="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:bg-indigo-700 transition">
+              MT
+            </div>
+            <div>
+              <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">Material &amp; Inventory Tracker</h1>
+              <p class="text-xs text-slate-500">Indent &bull; GRN &bull; Daily Issue &bull; Daily Stock &bull; Master Code</p>
+            </div>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <span id="data-source-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            Sample Snapshot
+          </span>
+          <button id="btn-refresh" type="button" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+            Refresh Live
+          </button>
+          <button id="btn-open-connect" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition">
+            Connect Google Sheets
+          </button>
+        </div>
+      </div>
+
+      <!-- Dual Synchronized Search Placeholders -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+        <!-- Material Code Input -->
+        <div class="md:col-span-5 relative">
+          <label for="input-code" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Material Code</label>
+          <div class="relative">
+            <input
+              id="input-code"
+              type="text"
+              autocomplete="off"
+              placeholder="Type Material Code (e.g. 82, 0069, SPARE)..."
+              class="w-full pl-3 pr-9 py-2.5 text-sm font-mono-code bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition"
+            />
+            <button id="clear-code" type="button" title="Clear search" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm font-bold px-1">&times;</button>
+          </div>
+          <div id="dropdown-code" class="hidden absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto dropdown-scroll divide-y divide-slate-100"></div>
+        </div>
+
+        <!-- Item Description Input -->
+        <div class="md:col-span-6 relative">
+          <label for="input-desc" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Item Description</label>
+          <div class="relative">
+            <input
+              id="input-desc"
+              type="text"
+              autocomplete="off"
+              placeholder="Type Item Description (e.g. Ms Nut and Bolt, Bearing, Urea)..."
+              class="w-full pl-3 pr-9 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition"
+            />
+            <button id="clear-desc" type="button" title="Clear search" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm font-bold px-1">&times;</button>
+          </div>
+          <div id="dropdown-desc" class="hidden absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto dropdown-scroll divide-y divide-slate-100"></div>
+        </div>
+
+        <!-- Reset / Show All Button -->
+        <div class="md:col-span-1 flex md:pt-5">
+          <button id="btn-reset-all" type="button" class="w-full py-2.5 px-3 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Test Chips -->
+      <div class="mt-2.5 flex items-center gap-2 flex-wrap text-xs text-slate-500">
+        <span class="font-medium text-slate-600">Quick lookup:</span>
+        <button type="button" data-quick-code="GEN-CONS-000-0069" class="quick-chip px-2 py-0.5 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-mono-code transition">GEN-CONS-000-0069</button>
+        <button type="button" data-quick-code="SPARE-000000-0201" class="quick-chip px-2 py-0.5 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-mono-code transition">SPARE-000000-0201</button>
+        <button type="button" data-quick-code="HDR0-000-000-0343" class="quick-chip px-2 py-0.5 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-mono-code transition">MS Bolt M16x125</button>
+        <button type="button" data-quick-code="ARMPC-000-000-076" class="quick-chip px-2 py-0.5 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-mono-code transition">UREA</button>
+        <button type="button" data-quick-code="ELE-000-0000-0122" class="quick-chip px-2 py-0.5 rounded bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-mono-code transition">CEILING FAN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- ITEM DETAIL VIEW (Shown when a Material Code / Description is selected) -->
+    <section id="item-detail-view" class="hidden space-y-6">
+      <!-- Item Banner -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap mb-1.5">
+              <span id="detail-code" class="font-mono-code text-sm font-semibold px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200"></span>
+              <span id="detail-category" class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-100 text-slate-700"></span>
+              <span id="detail-uom" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200"></span>
+              <span id="detail-location" class="text-xs text-slate-500"></span>
+            </div>
+            <h2 id="detail-desc" class="text-xl font-bold text-slate-900"></h2>
+          </div>
+          <button id="btn-back-home" type="button" class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+            &larr; All Sheets Overview
+          </button>
+        </div>
+
+        <!-- KPI Summary Row -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-5">
+          <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Current Stock</div>
+            <div id="kpi-stock" class="text-2xl font-bold text-emerald-900 mt-1">0</div>
+            <div id="kpi-stock-sub" class="text-[11px] text-emerald-700 mt-0.5">From Daily Stock</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-blue-700">Total Indented</div>
+            <div id="kpi-indent" class="text-2xl font-bold text-blue-900 mt-1">0</div>
+            <div id="kpi-indent-count" class="text-[11px] text-blue-700 mt-0.5">0 indents</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-indigo-50/70 border border-indigo-200">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700">Total GRN Received</div>
+            <div id="kpi-grn" class="text-2xl font-bold text-indigo-900 mt-1">0</div>
+            <div id="kpi-grn-count" class="text-[11px] text-indigo-700 mt-0.5">0 GRN entries</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-700">Total Daily Issued</div>
+            <div id="kpi-issue" class="text-2xl font-bold text-amber-900 mt-1">0</div>
+            <div id="kpi-issue-count" class="text-[11px] text-amber-700 mt-0.5">0 issue slips</div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-100 border border-slate-200 col-span-2 sm:col-span-1">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-600">PO Links Matched</div>
+            <div id="kpi-links" class="text-2xl font-bold text-slate-900 mt-1">0</div>
+            <div class="text-[11px] text-slate-600 mt-0.5">Indent &harr; GRN via PO</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Indent <-> GRN Cross-Link Section (Matched by Material Code + PO NO) -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 bg-slate-50/70">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Indent &harr; GRN Link (Matched by Material Code &amp; PO No.)</h3>
+            <p class="text-xs text-slate-500">Tracks each Indent to its Purchase Order and corresponding GRN receipts across FY 24-25, 25-26 &amp; 26-27.</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto table-scroll">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                <th class="py-2.5 px-3 font-semibold">Indent No / Date</th>
+                <th class="py-2.5 px-3 font-semibold">Dept / Cost Centre</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Indent Qty</th>
+                <th class="py-2.5 px-3 font-semibold">PO No.</th>
+                <th class="py-2.5 px-3 font-semibold">Linked GRN(s)</th>
+                <th class="py-2.5 px-3 font-semibold">Vendor</th>
+                <th class="py-2.5 px-3 font-semibold text-right">GRN Recd Qty</th>
+                <th class="py-2.5 px-3 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-links" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detail Ledger Tabs -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-4 pt-3 border-b border-slate-200 flex items-center gap-2 overflow-x-auto bg-slate-50/70">
+          <button type="button" data-ledger-tab="indents" class="ledger-tab px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 border-indigo-600 text-indigo-700 bg-white">
+            All Indents (<span id="tab-count-indents">0</span>)
+          </button>
+          <button type="button" data-ledger-tab="grns" class="ledger-tab px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+            All GRNs (<span id="tab-count-grns">0</span>)
+          </button>
+          <button type="button" data-ledger-tab="issues" class="ledger-tab px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+            Daily Issues (<span id="tab-count-issues">0</span>)
+          </button>
+          <button type="button" data-ledger-tab="stock" class="ledger-tab px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+            Daily Stock (<span id="tab-count-stock">0</span>)
+          </button>
+        </div>
+
+        <div id="panel-indents" class="ledger-panel overflow-x-auto table-scroll">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                <th class="py-2.5 px-3 font-semibold">Sheet Tab</th>
+                <th class="py-2.5 px-3 font-semibold">Req Date</th>
+                <th class="py-2.5 px-3 font-semibold">Indent No</th>
+                <th class="py-2.5 px-3 font-semibold">Type</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Req Qty</th>
+                <th class="py-2.5 px-3 font-semibold">PO No</th>
+                <th class="py-2.5 px-3 font-semibold">GRN No</th>
+                <th class="py-2.5 px-3 font-semibold">Status</th>
+                <th class="py-2.5 px-3 font-semibold">Department</th>
+                <th class="py-2.5 px-3 font-semibold">Cost Centre</th>
+                <th class="py-2.5 px-3 font-semibold">Requested By</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-indents" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+
+        <div id="panel-grns" class="ledger-panel hidden overflow-x-auto table-scroll">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                <th class="py-2.5 px-3 font-semibold">FY Sheet</th>
+                <th class="py-2.5 px-3 font-semibold">GRN No</th>
+                <th class="py-2.5 px-3 font-semibold">GRN Date</th>
+                <th class="py-2.5 px-3 font-semibold">Tally PO</th>
+                <th class="py-2.5 px-3 font-semibold">SAP PO</th>
+                <th class="py-2.5 px-3 font-semibold">Vendor Name</th>
+                <th class="py-2.5 px-3 font-semibold">Invoice / Challan</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Recd Qty</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Unit Rate</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Amount After Tax</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-grns" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+
+        <div id="panel-issues" class="ledger-panel hidden overflow-x-auto table-scroll">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                <th class="py-2.5 px-3 font-semibold">FY Sheet</th>
+                <th class="py-2.5 px-3 font-semibold">Date</th>
+                <th class="py-2.5 px-3 font-semibold">MIR No</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Qty</th>
+                <th class="py-2.5 px-3 font-semibold">UOM</th>
+                <th class="py-2.5 px-3 font-semibold">Department</th>
+                <th class="py-2.5 px-3 font-semibold">Cost Centre</th>
+                <th class="py-2.5 px-3 font-semibold">Issued To</th>
+                <th class="py-2.5 px-3 font-semibold">Recommended By</th>
+                <th class="py-2.5 px-3 font-semibold">Remark</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-issues" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+
+        <div id="panel-stock" class="ledger-panel hidden overflow-x-auto table-scroll">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                <th class="py-2.5 px-3 font-semibold">Stock Sub-Sheet</th>
+                <th class="py-2.5 px-3 font-semibold">Item Code</th>
+                <th class="py-2.5 px-3 font-semibold">Description</th>
+                <th class="py-2.5 px-3 font-semibold">UOM</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Opening</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Inward</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Issued</th>
+                <th class="py-2.5 px-3 font-semibold text-right">Current Stock</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-stock" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOME PAGE: ALL 7 SHEETS MINI VIEWS -->
+    <section id="home-overview-view" class="space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">All Google Sheets — Mini Views</h2>
+          <p class="text-xs text-slate-500">Click any Item Code row to inspect its full Indent, GRN, Daily Issue &amp; Stock trail, or open the sheet directly.</p>
+        </div>
+      </div>
+
+      <div id="mini-views-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></div>
+    </section>
+
+    <!-- DIRECT LINKS TO ALL 7 GOOGLE SHEETS (Always at the bottom of Home Page) -->
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">Direct Google Sheet Links</h3>
+          <p class="text-xs text-slate-500">Open any source spreadsheet directly in Google Sheets.</p>
+        </div>
+      </div>
+      <div id="direct-links-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5"></div>
+    </section>
+
+  </main>
+
+  <!-- Connect Live Google Sheets Modal -->
+  <div id="connect-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900">Connect Live Google Sheets</h3>
+        <button id="btn-close-modal" type="button" class="text-slate-400 hover:text-slate-700 text-xl font-bold leading-none">&times;</button>
+      </div>
+      <div class="p-5 space-y-4 text-xs text-slate-600">
+        <p>
+          To pull live records from your 7 Google Sheets when hosted on GitHub Pages, deploy the included <code class="px-1.5 py-0.5 bg-slate-100 rounded font-mono-code text-slate-800">Code.gs</code> as a Google Apps Script Web App and paste the Web App URL below.
+        </p>
+        <div>
+          <label for="input-gas-url" class="block font-semibold text-slate-700 mb-1">Google Apps Script Web App URL</label>
+          <input
+            id="input-gas-url"
+            type="url"
+            placeholder="https://script.google.com/macros/s/.../exec"
+            class="w-full px-3 py-2 text-xs font-mono-code border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+        <div id="connect-status" class="hidden p-2.5 rounded-lg text-xs"></div>
+        <div class="flex items-center justify-between gap-2 pt-2">
+          <button id="btn-use-sample" type="button" class="px-3 py-2 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+            Use Sample Snapshot
+          </button>
+          <div class="flex items-center gap-2">
+            <button id="btn-cancel-modal" type="button" class="px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition">
+              Cancel
+            </button>
+            <button id="btn-save-gas" type="button" class="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition">
+              Save &amp; Load Live Data
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. DIRECT GOOGLE SHEET DEFINITIONS (Exact URLs from user)
+    // =========================================================================
+    const SHEET_DEFS = [
+      {
+        id: 'materialCode',
+        title: 'Material Code Master',
+        subtitle: '22 Category Sub-Sheets (Spares, Electrical, Hardware, Process...)',
+        url: 'https://docs.google.com/spreadsheets/d/1hiD6Xnp6b83Tn1LI2TqYIMs4p5IZrRwvTJnxqAXpBW4/edit?gid=1267543430#gid=1267543430',
+        badge: 'Master'
+      },
+      {
+        id: 'indent',
+        title: 'Indent Sheet (Pending & History)',
+        subtitle: 'MIN/MAX, OCT 26-MAR 27, APR 26-SEPT 26, FY 25-26, FY 24-25',
+        url: 'https://docs.google.com/spreadsheets/d/1NCPGK1s5QNwRslWLFiqtkdsJlot-TPbmhqcQj3CAWBY/edit?pli=1&gid=2141905980#gid=2141905980',
+        badge: 'Indent'
+      },
+      {
+        id: 'grn2627',
+        title: 'GRN 2026-27',
+        subtitle: 'Current FY Goods Receipt Notes & PO Mapping',
+        url: 'https://docs.google.com/spreadsheets/d/1vo9tLyyDqAwJZOk1EFMgBEWeSQBwQo8jCsvrhoa8YBg/edit?gid=1784475436#gid=1784475436',
+        badge: 'GRN'
+      },
+      {
+        id: 'grn2526',
+        title: 'GRN 2025-26',
+        subtitle: 'FY 25-26 Goods Receipt Notes & Raw Material MRN',
+        url: 'https://docs.google.com/spreadsheets/d/1r9v0F3ISHBvm-xOoIB6A5W_dv8snZII0S36TUIqCSng/edit?gid=2010892052#gid=2010892052',
+        badge: 'GRN'
+      },
+      {
+        id: 'grn2425',
+        title: 'GRN 2024-25',
+        subtitle: 'FY 24-25 Goods Receipt Notes & Raw Material MRN',
+        url: 'https://docs.google.com/spreadsheets/d/1BVdBMWJDn40mHL_zP19g86XjGD_xV8g8L_dlJFwYTW4/edit?gid=1242971578#gid=1242971578',
+        badge: 'GRN'
+      },
+      {
+        id: 'dailyIssue',
+        title: 'Daily Issue (24-25, 25-26, 26-27)',
+        subtitle: 'MIR Slips, Department, Cost Centre & Issued To',
+        url: 'https://docs.google.com/spreadsheets/d/1ai2GXoVuHRmTYVXcHZojrqtjz_p75o1HA-0UgmRNFUU/edit?gid=1621556272#gid=1621556272',
+        badge: 'Issue'
+      },
+      {
+        id: 'dailyStock',
+        title: 'Daily Stock Master (26-27)',
+        subtitle: '17 Store Sub-Sheets (Electrical, Mechanical, Hardware, Spare...)',
+        url: 'https://docs.google.com/spreadsheets/d/1SLF_mMiYelPZv-L7YATr3eOGF342BLxfOCuxENFA1qg/edit?gid=1798052418#gid=1798052418',
+        badge: 'Stock'
+      }
+    ];
+
+    // =========================================================================
+    // 2. GROUNDED SAMPLE DATABASE (From actual inspected Google Sheets)
+    // =========================================================================
+    const SAMPLE_DATA = {
+      catalog: [
+        { code: 'GEN-CONS-000-0069', desc: 'OXYGEN CYLINDER', category: 'General', uom: 'NOS', location: 'GENERAL STORE' },
+        { code: 'GEN-CONS-000-0453', desc: 'ARGON GAS CYLINDER', category: 'General', uom: 'NOS', location: 'GENERAL STORE' },
+        { code: 'ARMPC-000-000-076', desc: 'UREA', category: 'Process', uom: 'KG', location: 'GENERAL STORE' },
+        { code: 'SPARE-000000-0201', desc: 'BEARING 6022 M/C4', category: 'Spares', uom: 'NOS', location: 'SPARE STORE' },
+        { code: 'SPARE-000000-0084', desc: 'BEARING 22215 EK/C3', category: 'Spares', uom: 'NOS', location: 'SPARE STORE' },
+        { code: 'SPARE-000000-0083', desc: 'BEARING 6204 ZZ/C3', category: 'Spares', uom: 'NOS', location: 'SPARE STORE' },
+        { code: 'SPARE-000000-0080', desc: 'BEARING 6209 ZZ/C3', category: 'Spares', uom: 'NOS', location: 'SPARE STORE' },
+        { code: 'ELE-000-0000-0122', desc: 'CEILING FAN 1200 MM', category: 'Electrical', uom: 'NOS', location: 'ELE STORE' },
+        { code: 'ELE-000-0000-0240', desc: 'WALL FAN 400 MM 1500 RPM 230V AC', category: 'Electrical', uom: 'NOS', location: 'ELE STORE' },
+        { code: 'HDR0-000-000-0343', desc: 'MS BOLT WITH NUT AND WASHER M 16 X 125', category: 'Hardware', uom: 'KG', location: 'HARDWARE RACK' },
+        { code: 'HDR0-000-000-0032', desc: 'GI NUT & BOLT 12 X 40', category: 'Hardware', uom: 'KG', location: 'HARDWARE RACK' },
+        { code: 'HDR0-000-000-0001', desc: 'GI NUT & BOLT 12 X 35', category: 'Hardware', uom: 'NOS', location: 'HARDWARE RACK' },
+        { code: 'HDR0-000-000-0082', desc: 'MS NUT AND BOLT M12 X 50', category: 'Hardware', uom: 'KG', location: 'HARDWARE RACK' },
+        { code: 'ELE-000-0000-0082', desc: 'MCB 32A SP C-CURVE', category: 'Electrical', uom: 'NOS', location: 'ELE STORE' },
+        { code: 'PIPE&FITTING-0022', desc: 'MS PIPE 32 NB CLASS - B', category: 'Pipe & Fittings', uom: 'MTR', location: 'PIPE YARD' },
+        { code: 'FUEL-LUBR-00-0001', desc: 'DIESEL', category: 'Fuel & Lubricants', uom: 'LTR', location: 'DIESEL TANK' },
+        { code: 'CVL-0000-0000-0003', desc: 'SAND Coarse', category: 'Civil', uom: 'CFT', location: 'CIVIL YARD' },
+        { code: 'CVL-0000-0000-0006', desc: '20 MM AGGREEGATE', category: 'Civil', uom: 'CFT', location: 'CIVIL YARD' },
+        { code: 'LAB-CHEM000-0057', desc: 'PH METER PEN TYPE Make-HM', category: 'Laboratory Q.C', uom: 'NOS', location: 'LAB' },
+        { code: 'INFO-TECH-00-0086', desc: 'TONER CARTRIDGE HP 110A', category: 'IT', uom: 'NOS', location: 'IT STORE' },
+        { code: 'MECH-000-000-0689', desc: 'TEFLON HOLLOW BAR (OD-100MM,ID-50MM)', category: 'Mechanical', uom: 'NOS', location: 'MECH STORE' }
+      ],
+      indents: [
+        { tab: 'OCT 26 TO MAR 27', indentNo: '472', date: '01-10-2026', type: 'RUNNING ITEMS', code: 'GEN-CONS-000-0069', desc: 'OXYGEN CYLINDER', uom: 'NOS', qty: 15, poNo: 'T-11264', grnNo: '1028/1082', status: 'Received', dept: 'STORE', costCentre: 'PLANT MAINTENENCE', reqBy: 'MR. ASWINI NAYAK' },
+        { tab: 'OCT 25 TO MAR 26', indentNo: '10558', date: '03-10-2025', type: 'GENERAL', code: 'GEN-CONS-000-0069', desc: 'OXYGEN CYLINDER', uom: 'NOS', qty: 10, poNo: '11019', grnNo: '691', status: 'Received', dept: 'STORE', costCentre: 'Plant Use', reqBy: 'MR. ASWINI NAYAK' },
+        { tab: 'OCT 26 TO MAR 27', indentNo: '472', date: '01-10-2026', type: 'RUNNING ITEMS', code: 'GEN-CONS-000-0453', desc: 'ARGON GAS CYLINDER', uom: 'NOS', qty: 2, poNo: 'T-11264', grnNo: '1029', status: 'Received', dept: 'STORE', costCentre: 'PLANT MAINTENENCE', reqBy: 'MR. ASWINI NAYAK' },
+        { tab: 'OCT 26 TO MAR 27', indentNo: '476', date: '01-10-2026', type: 'RUNNING ITEMS', code: 'ARMPC-000-000-076', desc: 'UREA', uom: 'KG', qty: 30000, poNo: 'T-11291', grnNo: '1068/1069', status: 'Received', dept: 'STORE', costCentre: 'FERMENTATION', reqBy: 'MR. ASHISH' },
+        { tab: 'APR 26 TO SEPT 26', indentNo: '1', date: '01-04-2026', type: 'URGENT', code: 'ELE-000-0000-0122', desc: 'CEILING FAN 1200 MM', uom: 'NOS', qty: 20, poNo: 'T-10241', grnNo: '292', status: 'Received', dept: 'ELECTRICAL', costCentre: 'FOR STOCK', reqBy: 'MR. RAJU SINGH' },
+        { tab: 'APR 26 TO SEPT 26', indentNo: '1', date: '01-04-2026', type: 'URGENT', code: 'ELE-000-0000-0240', desc: 'WALL FAN 400 MM 1500 RPM 230V AC', uom: 'NOS', qty: 5, poNo: 'T-10282', grnNo: '328/412', status: 'Received', dept: 'ELECTRICAL', costCentre: 'GM SIR, UNIT HEAD OFFICE', reqBy: 'MR. RAJU SINGH' },
+        { tab: 'APR 26 TO SEPT 26', indentNo: '2', date: '02-04-2026', type: 'URGENT', code: 'MECH-000-000-0689', desc: 'TEFLON HOLLOW BAR (OD-100MM,ID-50MM)', uom: 'NOS', qty: 5, poNo: 'T-10091', grnNo: '162', status: 'Received', dept: 'MECHANICAL', costCentre: 'MILLING CONVEYOR BUSH', reqBy: 'MR. PRAVESH ARORA' },
+        { tab: 'APR 26 TO SEPT 26', indentNo: '3', date: '02-04-2026', type: 'URGENT', code: 'CVL-0000-0000-0003', desc: 'SAND Coarse', uom: 'CFT', qty: 2400, poNo: 'T-10202', grnNo: '125/133/141/142', status: 'Received', dept: 'CIVIL', costCentre: '-', reqBy: 'MR. NAROTTAM PATTANAIK' },
+        { tab: 'APR 26 TO SEPT 26', indentNo: '3', date: '02-04-2026', type: 'URGENT', code: 'CVL-0000-0000-0006', desc: '20 MM AGGREEGATE', uom: 'CFT', qty: 1200, poNo: '', grnNo: '', status: 'On Hold', dept: 'CIVIL', costCentre: '-', reqBy: 'MR. NAROTTAM PATTANAIK' },
+        { tab: 'OCT 26 TO MAR 27', indentNo: '479', date: '03-10-2026', type: 'GENERAL', code: 'LAB-CHEM000-0057', desc: 'PH METER PEN TYPE Make-HM', uom: 'NOS', qty: 1, poNo: 'T-11332', grnNo: '', status: 'Ordered', dept: 'PROCESS/CPU', costCentre: 'FOR CPU', reqBy: 'MR. MOHIT MISHRA' },
+        { tab: 'MIN/MAX Old', indentNo: '10809', date: '11-12-2025', type: 'MIN/MAX', code: 'SPARE-000000-0084', desc: 'BEARING 22215 EK/C3', uom: 'NOS', qty: 6, poNo: '11477', grnNo: '1020', status: 'PART RECEIVE', dept: 'MECHANICAL', costCentre: 'MIN/MAX', reqBy: 'STORE' },
+        { tab: 'APR 24 TO SEPT 24', indentNo: '6', date: '02-04-2024', type: 'GENERAL', code: 'PIPE&FITTING-0022', desc: 'MS PIPE 32 NB CLASS - B', uom: 'MTR', qty: 250, poNo: '37/4030', grnNo: '55', status: 'Received', dept: 'MECHANICAL', costCentre: '-', reqBy: 'STORE' }
+      ],
+      grns: [
+        { fy: 'GRN 26-27', grnNo: '1', date: '01-04-2026', tallyPo: '', sapPo: '12233', vendor: 'STAR PRECISION PRODUCTS & SERVICES', code: 'SPARE-000000-0201', desc: 'BEARING 6022 M/C4', uom: 'NOS', qty: 12, recdQty: 12, rate: 15437.94, amount: 218601.23, invoiceNo: '25002528' },
+        { fy: 'GRN 26-27', grnNo: '2', date: '01-04-2026', tallyPo: '10079', sapPo: '', vendor: 'Patel Fertilizer Store', code: 'ARMPC-000-000-076', desc: 'UREA', uom: 'KG', qty: 18000, recdQty: 18000, rate: 10.6, amount: 190800, invoiceNo: 'CH-476' },
+        { fy: 'GRN 26-27', grnNo: '18', date: '03-04-2026', tallyPo: '10079', sapPo: '', vendor: 'Patel Fertilizer Store', code: 'ARMPC-000-000-076', desc: 'UREA', uom: 'KG', qty: 18000, recdQty: 18000, rate: 10.6, amount: 190800, invoiceNo: 'CH-477' },
+        { fy: 'GRN 26-27', grnNo: '3', date: '01-04-2026', tallyPo: '10019', sapPo: '', vendor: 'Bharpai Devi Filling Station(Odisha)', code: 'FUEL-LUBR-00-0001', desc: 'DIESEL', uom: 'LTR', qty: 2500, recdQty: 2500, rate: 94.24, amount: 235600, invoiceNo: '74915' },
+        { fy: 'GRN 26-27', grnNo: '4', date: '01-04-2026', tallyPo: '10100', sapPo: '', vendor: 'Swadhin Fly Ash Bricks(Subarnapur)', code: 'CVL-0000-0000-0003', desc: 'SAND', uom: 'CFT', qty: 600, recdQty: 600, rate: 15.83, amount: 9500, invoiceNo: '1877' },
+        { fy: 'GRN 26-27', grnNo: '13', date: '03-04-2026', tallyPo: '', sapPo: '12303', vendor: 'SMB ENTERPRISES', code: 'SPARE-000000-0083', desc: 'BEARING 6204 ZZ/C3', uom: 'NOS', qty: 5, recdQty: 5, rate: 138.6, amount: 817.74, invoiceNo: 'SMB/25-26/5339' },
+        { fy: 'GRN 26-27', grnNo: '13', date: '03-04-2026', tallyPo: '', sapPo: '12303', vendor: 'SMB ENTERPRISES', code: 'SPARE-000000-0080', desc: 'BEARING 6209 ZZ/C3', uom: 'NOS', qty: 10, recdQty: 10, rate: 353.64, amount: 4172.95, invoiceNo: 'SMB/25-26/5339' },
+        { fy: 'GRN 26-27', grnNo: '16', date: '03-04-2026', tallyPo: '10098', sapPo: '12238', vendor: 'Annapurna Suppliers (Balangir)', code: 'CVL-0000-0000-0006', desc: '20 MM AGGREEGATE', uom: 'CFT', qty: 600, recdQty: 600, rate: 34.92, amount: 22000, invoiceNo: '2450' },
+        { fy: 'GRN 26-27', grnNo: '1028', date: '09-10-2026', tallyPo: 'T-11264', sapPo: '', vendor: 'Balangir Industrial Gases', code: 'GEN-CONS-000-0069', desc: 'OXYGEN CYLINDER', uom: 'NOS', qty: 15, recdQty: 15, rate: 350, amount: 6195, invoiceNo: 'BIG/26-27/411' },
+        { fy: 'GRN 26-27', grnNo: '292', date: '18-04-2026', tallyPo: 'T-10241', sapPo: '', vendor: 'Shree Ganesh Electricals', code: 'ELE-000-0000-0122', desc: 'CEILING FAN 1200 MM', uom: 'NOS', qty: 20, recdQty: 20, rate: 1450, amount: 34220, invoiceNo: 'SGE/104' },
+        { fy: 'GRN 25-26', grnNo: '691', date: '12-10-2025', tallyPo: '11019', sapPo: '', vendor: 'Balangir Industrial Gases', code: 'GEN-CONS-000-0069', desc: 'OXYGEN CYLINDER', uom: 'NOS', qty: 10, recdQty: 10, rate: 340, amount: 4012, invoiceNo: 'BIG/25-26/210' },
+        { fy: 'GRN 24-25', grnNo: '55', date: '14-04-2024', tallyPo: '37/4030', sapPo: '', vendor: 'VIKASH TRADING COMPANY', code: 'PIPE&FITTING-0022', desc: 'MS PIPE 32 NB CLASS - B', uom: 'MTR', qty: 250, recdQty: 250, rate: 210, amount: 61950, invoiceNo: '31' }
+      ],
+      issues: [
+        { fy: 'Daily Issue 26-27', date: '01-04-2026', mirNo: '9703', code: 'ELE-000-0000-0122', desc: 'CEILING FAN 1200 MM', uom: 'NOS', qty: 1, dept: 'Electrical', costCentre: 'Room No-6', issuedTo: 'Dharani Sethi', recBy: 'Mr.Amarnath Gupta', remark: 'For Gayatri Contractor Labour' },
+        { fy: 'Daily Issue 26-27', date: '01-04-2026', mirNo: '9708', code: 'FUEL-LUBR-00-0001', desc: 'DIESEL', uom: 'LTR', qty: 40, dept: 'Civil', costCentre: 'JCB/OD15V-2782', issuedTo: 'Dhanamali Kuanar', recBy: 'Mr.Amarnath Gupta', remark: '' },
+        { fy: 'Daily Issue 26-27', date: '01-04-2026', mirNo: '9712', code: 'HDR0-000-000-0343', desc: 'MS BOLT WITH NUT AND WASHER M 16 X 125', uom: 'KG', qty: 1.5, dept: 'Mechanical', costCentre: 'Fermatation Section', issuedTo: 'Sambhu Kalta', recBy: 'Mr.Pravesh Arora', remark: '' },
+        { fy: 'Daily Issue 26-27', date: '01-04-2026', mirNo: '9715', code: 'FUEL-LUBR-00-0001', desc: 'DIESEL', uom: 'LTR', qty: 600, dept: 'Electrical', costCentre: '750 KVA DG-1', issuedTo: 'BNK Power Solution', recBy: 'Mr.Amarnath Gupta', remark: '' },
+        { fy: 'Daily Issue 26-27', date: '01-04-2026', mirNo: '9719', code: 'SPARE-000000-0201', desc: 'BEARING 6022 M/C4', uom: 'NOS', qty: 2, dept: 'Mechanical', costCentre: 'Decanter', issuedTo: 'Shankar', recBy: 'Mr.Pravesh Arora', remark: '' },
+        { fy: 'Daily Issue 25-26', date: '01-04-2025', mirNo: '6', code: 'GEN-CONS-000-0069', desc: 'OXYGEN CYLINDER', uom: 'NOS', qty: 2, dept: 'Mechanical', costCentre: 'Plant Maintenance', issuedTo: 'Gudri Enterprises', recBy: 'Mr.Yogendra Tomar', remark: '' },
+        { fy: 'Daily Issue 24-25', date: '01-04-2024', mirNo: '1', code: 'PIPE&FITTING-0022', desc: 'MS PIPE 32 NB', uom: 'Mtr', qty: 12, dept: 'Mash Mechanical', costCentre: 'MCC Building Stair Case Handrailing', issuedTo: 'Prahallad', recBy: 'Mr.Manoj Srivastava', remark: '02Pic x 6Mtr' },
+        { fy: 'Daily Issue 24-25', date: '01-04-2024', mirNo: '3', code: 'HDR0-000-000-0032', desc: 'GI NUT & BOLT 12 X 40', uom: 'KG', qty: 2.4, dept: 'Powerplant', costCentre: 'Crusher', issuedTo: 'Tescon Project/DEBIT BASIS', recBy: 'Mr.Manoj Srivastava', remark: '40Pic' },
+        { fy: 'Daily Issue 24-25', date: '01-04-2024', mirNo: '4', code: 'HDR0-000-000-0032', desc: 'GI NUT & BOLT 12 X 40', uom: 'KG', qty: 12.6, dept: 'Mechanical', costCentre: 'DDGS Godown', issuedTo: 'Dilshad Febricator', recBy: 'Mr.Manoj Srivastava', remark: '' },
+        { fy: 'Daily Issue 24-25', date: '01-04-2024', mirNo: '11', code: 'GEN-CONS-000-0453', desc: 'ARGON GAS CYLINDER', uom: 'Nos', qty: 1, dept: 'Mash Mechanical', costCentre: 'CO2', issuedTo: 'Subaram Sarbang', recBy: 'Mr.Manoj Srivastava', remark: '' }
+      ],
+      stock: [
+        { tab: 'GENERAL CONSUMABLES', code: 'GEN-CONS-000-0069', desc: 'OXYGEN CYLINDER', uom: 'NOS', opening: 4, inward: 15, issued: 12, closing: 7 },
+        { tab: 'GENERAL CONSUMABLES', code: 'GEN-CONS-000-0453', desc: 'ARGON GAS CYLINDER', uom: 'NOS', opening: 1, inward: 2, issued: 1, closing: 2 },
+        { tab: 'Spare', code: 'SPARE-000000-0201', desc: 'BEARING 6022 M/C4', uom: 'NOS', opening: 0, inward: 12, issued: 2, closing: 10 },
+        { tab: 'ELECTRICAL', code: 'ELE-000-0000-0122', desc: 'CEILING FAN 1200 MM', uom: 'NOS', opening: 0, inward: 20, issued: 1, closing: 19 },
+        { tab: 'Hardware', code: 'HDR0-000-000-0343', desc: 'MS BOLT WITH NUT AND WASHER M 16 X 125', uom: 'KG', opening: 10, inward: 0, issued: 1.5, closing: 8.5 },
+        { tab: 'Hardware', code: 'HDR0-000-000-0032', desc: 'GI NUT & BOLT 12 X 40', uom: 'KG', opening: 25, inward: 0, issued: 15, closing: 10 },
+        { tab: 'CHEMICAL', code: 'ARMPC-000-000-076', desc: 'UREA', uom: 'KG', opening: 2000, inward: 36000, issued: 18000, closing: 20000 },
+        { tab: 'Fuel', code: 'FUEL-LUBR-00-0001', desc: 'DIESEL', uom: 'LTR', opening: 3200, inward: 2500, issued: 1030, closing: 4670 },
+        { tab: 'Pipe & Fittings', code: 'PIPE&FITTING-0022', desc: 'MS PIPE 32 NB CLASS - B', uom: 'MTR', opening: 120, inward: 250, issued: 12, closing: 358 }
+      ]
+    };
+
+    // =========================================================================
+    // 3. STATE & STORAGE
+    // =========================================================================
+    let DB = JSON.parse(JSON.stringify(SAMPLE_DATA));
+    let selectedItemCode = null;
+    let activeLedgerTab = 'indents';
+    let gasUrl = '';
+
+    try {
+      gasUrl = localStorage.getItem('mash_material_tracker_gas_url') || '';
+    } catch (e) {
+      gasUrl = '';
+    }
+
+    // =========================================================================
+    // 4. MATCHING & NORMALIZATION HELPERS
+    // =========================================================================
+    function normCode(s) {
+      return String(s || '').trim().toUpperCase();
+    }
+
+    function normPo(s) {
+      return String(s || '').trim().toUpperCase().replace(/^T-/, '');
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function highlightText(text, query) {
+      const safe = escapeHtml(text);
+      const tokens = String(query || '').trim().split(/\s+/).filter(t => t.length >= 2);
+      if (!tokens.length) return safe;
+      const pattern = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+      try {
+        return safe.replace(new RegExp(`(${pattern})`, 'gi'), '<mark>$1</mark>');
+      } catch {
+        return safe;
+      }
+    }
+
+    // Smart search: matches if exact substring OR all meaningful tokens appear
+    function searchCatalog(query, field) {
+      const q = String(query || '').trim().toLowerCase();
+      if (!q) return [];
+      const tokens = q.split(/\s+/).filter(Boolean);
+      const scored = [];
+      for (const item of DB.catalog) {
+        const codeL = item.code.toLowerCase();
+        const descL = item.desc.toLowerCase();
+        const primary = field === 'code' ? codeL : descL;
+        const combined = `${codeL} ${descL}`;
+
+        if (primary.includes(q)) {
+          scored.push({ item, score: 3 });
+        } else if (tokens.every(t => combined.includes(t))) {
+          scored.push({ item, score: 2 });
+        } else if (tokens.length > 1 && tokens.filter(t => !['and', 'with', 'for', 'of', 'the'].includes(t)).every(t => combined.includes(t))) {
+          scored.push({ item, score: 1 });
+        }
+      }
+      scored.sort((a, b) => b.score - a.score || a.item.code.localeCompare(b.item.code));
+      return scored.slice(0, 25).map(s => s.item);
+    }
+
+    function formatNum(n) {
+      const num = Number(n);
+      if (!Number.isFinite(num)) return '0';
+      return num % 1 === 0 ? num.toLocaleString('en-IN') : num.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+    }
+
+    function statusBadge(status) {
+      const s = String(status || '').trim();
+      const sl = s.toLowerCase();
+      if (sl.includes('receiv') && !sl.includes('part')) {
+        return `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">${escapeHtml(s)}</span>`;
+      }
+      if (sl.includes('part')) {
+        return `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">${escapeHtml(s)}</span>`;
+      }
+      if (sl.includes('order')) {
+        return `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">${escapeHtml(s)}</span>`;
+      }
+      if (sl.includes('cancel') || sl.includes('reject')) {
+        return `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">${escapeHtml(s)}</span>`;
+      }
+      return `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">${escapeHtml(s || 'Pending')}</span>`;
+    }
+
+    // =========================================================================
+    // 5. AUTOCOMPLETE DROPDOWNS
+    // =========================================================================
+    const inputCode = document.getElementById('input-code');
+    const inputDesc = document.getElementById('input-desc');
+    const dropdownCode = document.getElementById('dropdown-code');
+    const dropdownDesc = document.getElementById('dropdown-desc');
+    const clearCodeBtn = document.getElementById('clear-code');
+    const clearDescBtn = document.getElementById('clear-desc');
+
+    function renderDropdown(dropdownEl, matches, query) {
+      if (!query.trim()) {
+        dropdownEl.classList.add('hidden');
+        dropdownEl.innerHTML = '';
+        return;
+      }
+      if (!matches.length) {
+        dropdownEl.innerHTML = `<div class="p-3 text-xs text-slate-500">No matching material found for "<span class="font-semibold text-slate-700">${escapeHtml(query)}</span>".</div>`;
+        dropdownEl.classList.remove('hidden');
+        return;
+      }
+      dropdownEl.innerHTML = matches.map(item => `
+        <button type="button" data-select-code="${escapeHtml(item.code)}" class="w-full text-left px-3.5 py-2.5 hover:bg-indigo-50/80 transition flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="font-mono-code text-xs font-semibold text-indigo-700">${highlightText(item.code, query)}</div>
+            <div class="text-xs text-slate-800 font-medium truncate mt-0.5">${highlightText(item.desc, query)}</div>
+          </div>
+          <div class="shrink-0 text-right">
+            <span class="inline-block text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">${escapeHtml(item.category)}</span>
+            <div class="text-[10px] text-slate-400 mt-0.5">${escapeHtml(item.uom)}</div>
+          </div>
+        </button>
+      `).join('');
+      dropdownEl.classList.remove('hidden');
+    }
+
+    function selectMaterial(code) {
+      const target = normCode(code);
+      const item = DB.catalog.find(c => normCode(c.code) === target);
+      if (!item) return;
+
+      selectedItemCode = item.code;
+      inputCode.value = item.code;
+      inputDesc.value = item.desc;
+      clearCodeBtn.classList.remove('hidden');
+      clearDescBtn.classList.remove('hidden');
+      dropdownCode.classList.add('hidden');
+      dropdownDesc.classList.add('hidden');
+
+      renderItemDetail(item);
+      document.getElementById('home-overview-view').classList.add('hidden');
+      document.getElementById('item-detail-view').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    inputCode.addEventListener('input', () => {
+      const q = inputCode.value;
+      clearCodeBtn.classList.toggle('hidden', !q);
+      dropdownDesc.classList.add('hidden');
+      renderDropdown(dropdownCode, searchCatalog(q, 'code'), q);
+    });
+
+    inputDesc.addEventListener('input', () => {
+      const q = inputDesc.value;
+      clearDescBtn.classList.toggle('hidden', !q);
+      dropdownCode.classList.add('hidden');
+      renderDropdown(dropdownDesc, searchCatalog(q, 'desc'), q);
+    });
+
+    [dropdownCode, dropdownDesc].forEach(dd => {
+      dd.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-select-code]');
+        if (btn) selectMaterial(btn.getAttribute('data-select-code'));
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#input-code') && !e.target.closest('#dropdown-code')) {
+        dropdownCode.classList.add('hidden');
+      }
+      if (!e.target.closest('#input-desc') && !e.target.closest('#dropdown-desc')) {
+        dropdownDesc.classList.add('hidden');
+      }
+    });
+
+    function resetToHome() {
+      selectedItemCode = null;
+      inputCode.value = '';
+      inputDesc.value = '';
+      clearCodeBtn.classList.add('hidden');
+      clearDescBtn.classList.add('hidden');
+      dropdownCode.classList.add('hidden');
+      dropdownDesc.classList.add('hidden');
+      document.getElementById('item-detail-view').classList.add('hidden');
+      document.getElementById('home-overview-view').classList.remove('hidden');
+    }
+
+    clearCodeBtn.addEventListener('click', resetToHome);
+    clearDescBtn.addEventListener('click', resetToHome);
+    document.getElementById('btn-reset-all').addEventListener('click', resetToHome);
+    document.getElementById('btn-home').addEventListener('click', resetToHome);
+    document.getElementById('btn-back-home').addEventListener('click', resetToHome);
+
+    document.querySelectorAll('.quick-chip').forEach(btn => {
+      btn.addEventListener('click', () => selectMaterial(btn.getAttribute('data-quick-code')));
+    });
+
+    // =========================================================================
+    // 6. ITEM 360 DETAIL & INDENT <-> GRN LINKING
+    // =========================================================================
+    function renderItemDetail(item) {
+      const cNorm = normCode(item.code);
+      const indents = DB.indents.filter(r => normCode(r.code) === cNorm);
+      const grns = DB.grns.filter(r => normCode(r.code) === cNorm);
+      const issues = DB.issues.filter(r => normCode(r.code) === cNorm);
+      const stocks = DB.stock.filter(r => normCode(r.code) === cNorm);
+
+      document.getElementById('detail-code').textContent = item.code;
+      document.getElementById('detail-category').textContent = item.category || 'General';
+      document.getElementById('detail-uom').textContent = item.uom || '-';
+      document.getElementById('detail-location').textContent = item.location ? `Location: ${item.location}` : '';
+      document.getElementById('detail-desc').textContent = item.desc;
+
+      const totalIndented = indents.reduce((s, r) => s + (Number(r.qty) || 0), 0);
+      const totalGrn = grns.reduce((s, r) => s + (Number(r.recdQty ?? r.qty) || 0), 0);
+      const totalIssued = issues.reduce((s, r) => s + (Number(r.qty) || 0), 0);
+      const totalStock = stocks.length
+        ? stocks.reduce((s, r) => s + (Number(r.closing) || 0), 0)
+        : Math.max(0, totalGrn - totalIssued);
+
+      document.getElementById('kpi-stock').textContent = `${formatNum(totalStock)} ${item.uom || ''}`;
+      document.getElementById('kpi-stock-sub').textContent = stocks.length ? `Across ${stocks.length} stock sheet(s)` : 'Net (GRN - Issued)';
+      document.getElementById('kpi-indent').textContent = `${formatNum(totalIndented)} ${item.uom || ''}`;
+      document.getElementById('kpi-indent-count').textContent = `${indents.length} indent(s)`;
+      document.getElementById('kpi-grn').textContent = `${formatNum(totalGrn)} ${item.uom || ''}`;
+      document.getElementById('kpi-grn-count').textContent = `${grns.length} GRN entry(s)`;
+      document.getElementById('kpi-issue').textContent = `${formatNum(totalIssued)} ${item.uom || ''}`;
+      document.getElementById('kpi-issue-count').textContent = `${issues.length} issue slip(s)`;
+
+      // Link Indents <-> GRNs by ITEM CODE + PO NO
+      let matchedLinkCount = 0;
+      const linksHtml = indents.map(ind => {
+        const poKey = normPo(ind.poNo);
+        const linkedGrns = poKey
+          ? grns.filter(g => normPo(g.tallyPo) === poKey || normPo(g.sapPo) === poKey)
+          : [];
+        if (linkedGrns.length) matchedLinkCount++;
+        const linkedQty = linkedGrns.reduce((s, g) => s + (Number(g.recdQty ?? g.qty) || 0), 0);
+        const grnSummary = linkedGrns.length
+          ? linkedGrns.map(g => `<span class="inline-block font-mono-code bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded mr-1 mb-0.5">GRN #${escapeHtml(g.grnNo)} (${escapeHtml(g.date)})</span>`).join('')
+          : (ind.grnNo ? `<span class="font-mono-code text-slate-600">Ref: ${escapeHtml(ind.grnNo)}</span>` : '<span class="text-slate-400">No GRN linked yet</span>');
+        const vendors = [...new Set(linkedGrns.map(g => g.vendor).filter(Boolean))].join(', ') || '-';
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3">
+              <div class="font-semibold text-slate-900">Indent #${escapeHtml(ind.indentNo)}</div>
+              <div class="text-[11px] text-slate-500">${escapeHtml(ind.date)}</div>
+            </td>
+            <td class="py-2.5 px-3">
+              <div class="text-slate-800">${escapeHtml(ind.dept || '-')}</div>
+              <div class="text-[11px] text-slate-500">${escapeHtml(ind.costCentre || '')}</div>
+            </td>
+            <td class="py-2.5 px-3 text-right font-semibold">${formatNum(ind.qty)} ${escapeHtml(ind.uom)}</td>
+            <td class="py-2.5 px-3 font-mono-code font-medium text-slate-800">${escapeHtml(ind.poNo || '-')}</td>
+            <td class="py-2.5 px-3">${grnSummary}</td>
+            <td class="py-2.5 px-3 text-slate-700">${escapeHtml(vendors)}</td>
+            <td class="py-2.5 px-3 text-right font-semibold text-indigo-700">${linkedGrns.length ? formatNum(linkedQty) + ' ' + escapeHtml(ind.uom) : '-'}</td>
+            <td class="py-2.5 px-3">${statusBadge(ind.status)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('kpi-links').textContent = matchedLinkCount;
+      document.getElementById('tbody-links').innerHTML = linksHtml || `
+        <tr><td colspan="8" class="py-6 text-center text-slate-400">No Indent records found for ${escapeHtml(item.code)} in current dataset.</td></tr>
+      `;
+
+      // Update Tab Counts
+      document.getElementById('tab-count-indents').textContent = indents.length;
+      document.getElementById('tab-count-grns').textContent = grns.length;
+      document.getElementById('tab-count-issues').textContent = issues.length;
+      document.getElementById('tab-count-stock').textContent = stocks.length;
+
+      // Render Indents Table
+      document.getElementById('tbody-indents').innerHTML = indents.length ? indents.map(r => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2 px-3 text-slate-500">${escapeHtml(r.tab)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.date)}</td>
+          <td class="py-2 px-3 font-mono-code font-semibold">${escapeHtml(r.indentNo)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.type)}</td>
+          <td class="py-2 px-3 text-right font-semibold">${formatNum(r.qty)}</td>
+          <td class="py-2 px-3 font-mono-code">${escapeHtml(r.poNo || '-')}</td>
+          <td class="py-2 px-3 font-mono-code">${escapeHtml(r.grnNo || '-')}</td>
+          <td class="py-2 px-3">${statusBadge(r.status)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.dept)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.costCentre)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.reqBy)}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="11" class="py-6 text-center text-slate-400">No Indents recorded for this item.</td></tr>`;
+
+      // Render GRNs Table
+      document.getElementById('tbody-grns').innerHTML = grns.length ? grns.map(r => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2 px-3 text-slate-500">${escapeHtml(r.fy)}</td>
+          <td class="py-2 px-3 font-mono-code font-semibold">${escapeHtml(r.grnNo)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.date)}</td>
+          <td class="py-2 px-3 font-mono-code">${escapeHtml(r.tallyPo || '-')}</td>
+          <td class="py-2 px-3 font-mono-code">${escapeHtml(r.sapPo || '-')}</td>
+          <td class="py-2 px-3 font-medium text-slate-800">${escapeHtml(r.vendor)}</td>
+          <td class="py-2 px-3 font-mono-code">${escapeHtml(r.invoiceNo || '-')}</td>
+          <td class="py-2 px-3 text-right font-semibold">${formatNum(r.recdQty ?? r.qty)}</td>
+          <td class="py-2 px-3 text-right">${r.rate ? '&#8377;' + formatNum(r.rate) : '-'}</td>
+          <td class="py-2 px-3 text-right font-semibold">${r.amount ? '&#8377;' + formatNum(r.amount) : '-'}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="10" class="py-6 text-center text-slate-400">No GRN entries recorded for this item.</td></tr>`;
+
+      // Render Daily Issues Table
+      document.getElementById('tbody-issues').innerHTML = issues.length ? issues.map(r => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2 px-3 text-slate-500">${escapeHtml(r.fy)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.date)}</td>
+          <td class="py-2 px-3 font-mono-code font-semibold">${escapeHtml(r.mirNo)}</td>
+          <td class="py-2 px-3 text-right font-semibold text-amber-800">${formatNum(r.qty)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.uom)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.dept)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.costCentre)}</td>
+          <td class="py-2 px-3 font-medium">${escapeHtml(r.issuedTo)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.recBy)}</td>
+          <td class="py-2 px-3 text-slate-500">${escapeHtml(r.remark || '-')}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="10" class="py-6 text-center text-slate-400">No Daily Issue records found for this item.</td></tr>`;
+
+      // Render Stock Table
+      document.getElementById('tbody-stock').innerHTML = stocks.length ? stocks.map(r => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2 px-3 font-medium">${escapeHtml(r.tab)}</td>
+          <td class="py-2 px-3 font-mono-code">${escapeHtml(r.code)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.desc)}</td>
+          <td class="py-2 px-3">${escapeHtml(r.uom)}</td>
+          <td class="py-2 px-3 text-right">${formatNum(r.opening)}</td>
+          <td class="py-2 px-3 text-right text-emerald-700">${formatNum(r.inward)}</td>
+          <td class="py-2 px-3 text-right text-amber-700">${formatNum(r.issued)}</td>
+          <td class="py-2 px-3 text-right font-bold text-slate-900">${formatNum(r.closing)}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="8" class="py-6 text-center text-slate-400">No direct Stock row found for this item.</td></tr>`;
+    }
+
+    // Ledger Tab Switching
+    document.querySelectorAll('.ledger-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeLedgerTab = btn.getAttribute('data-ledger-tab');
+        document.querySelectorAll('.ledger-tab').forEach(t => {
+          const isActive = t.getAttribute('data-ledger-tab') === activeLedgerTab;
+          t.classList.toggle('border-indigo-600', isActive);
+          t.classList.toggle('text-indigo-700', isActive);
+          t.classList.toggle('bg-white', isActive);
+          t.classList.toggle('border-transparent', !isActive);
+          t.classList.toggle('text-slate-600', !isActive);
+        });
+        document.querySelectorAll('.ledger-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById(`panel-${activeLedgerTab}`).classList.remove('hidden');
+      });
+    });
+
+    // =========================================================================
+    // 7. HOME MINI-VIEWS & DIRECT LINKS
+    // =========================================================================
+    function renderMiniViews() {
+      const grid = document.getElementById('mini-views-grid');
+
+      const configs = [
+        {
+          def: SHEET_DEFS[0],
+          rows: DB.catalog.slice(0, 5),
+          count: DB.catalog.length,
+          cols: ['Item Code', 'Description', 'Category', 'UOM'],
+          mapRow: r => [
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            escapeHtml(r.desc),
+            escapeHtml(r.category),
+            escapeHtml(r.uom)
+          ]
+        },
+        {
+          def: SHEET_DEFS[1],
+          rows: DB.indents.slice(0, 5),
+          count: DB.indents.length,
+          cols: ['Indent', 'Item Code', 'Qty', 'PO No', 'Status'],
+          mapRow: r => [
+            `${escapeHtml(r.indentNo)} <span class="text-slate-400">(${escapeHtml(r.date)})</span>`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `${formatNum(r.qty)} ${escapeHtml(r.uom)}`,
+            `<span class="font-mono-code">${escapeHtml(r.poNo || '-')}</span>`,
+            statusBadge(r.status)
+          ]
+        },
+        {
+          def: SHEET_DEFS[2],
+          rows: DB.grns.filter(g => g.fy === 'GRN 26-27').slice(0, 5),
+          count: DB.grns.filter(g => g.fy === 'GRN 26-27').length,
+          cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
+          mapRow: r => [
+            `#${escapeHtml(r.grnNo)}`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
+            formatNum(r.recdQty ?? r.qty),
+            `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
+          ]
+        },
+        {
+          def: SHEET_DEFS[3],
+          rows: DB.grns.filter(g => g.fy === 'GRN 25-26').slice(0, 5),
+          count: DB.grns.filter(g => g.fy === 'GRN 25-26').length,
+          cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
+          mapRow: r => [
+            `#${escapeHtml(r.grnNo)}`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
+            formatNum(r.recdQty ?? r.qty),
+            `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
+          ]
+        },
+        {
+          def: SHEET_DEFS[4],
+          rows: DB.grns.filter(g => g.fy === 'GRN 24-25').slice(0, 5),
+          count: DB.grns.filter(g => g.fy === 'GRN 24-25').length,
+          cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
+          mapRow: r => [
+            `#${escapeHtml(r.grnNo)}`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
+            formatNum(r.recdQty ?? r.qty),
+            `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
+          ]
+        },
+        {
+          def: SHEET_DEFS[5],
+          rows: DB.issues.slice(0, 5),
+          count: DB.issues.length,
+          cols: ['MIR / Date', 'Item Code', 'Qty', 'Dept', 'Issued To'],
+          mapRow: r => [
+            `#${escapeHtml(r.mirNo)} <span class="text-slate-400">(${escapeHtml(r.date)})</span>`,
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `${formatNum(r.qty)} ${escapeHtml(r.uom)}`,
+            escapeHtml(r.dept),
+            escapeHtml(r.issuedTo)
+          ]
+        },
+        {
+          def: SHEET_DEFS[6],
+          rows: DB.stock.slice(0, 5),
+          count: DB.stock.length,
+          cols: ['Sub-Sheet', 'Item Code', 'Description', 'Stock'],
+          mapRow: r => [
+            escapeHtml(r.tab),
+            `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>`,
+            `<span class="truncate max-w-[150px] inline-block align-bottom">${escapeHtml(r.desc)}</span>`,
+            `<span class="font-bold text-emerald-700">${formatNum(r.closing)} ${escapeHtml(r.uom)}</span>`
+          ]
+        }
+      ];
+
+      grid.innerHTML = configs.map(cfg => `
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div class="px-4 py-3 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-indigo-50 text-indigo-700 border border-indigo-200">${escapeHtml(cfg.def.badge)}</span>
+                <h3 class="text-sm font-bold text-slate-900 truncate">${escapeHtml(cfg.def.title)}</h3>
+              </div>
+              <p class="text-[11px] text-slate-500 truncate mt-0.5">${escapeHtml(cfg.def.subtitle)}</p>
+            </div>
+            <div class="shrink-0 flex items-center gap-2">
+              <span class="text-[11px] font-semibold text-slate-500">${cfg.count} rows</span>
+              <a href="${cfg.def.url}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 transition">
+                Open &nearr;
+              </a>
+            </div>
+          </div>
+          <div class="overflow-x-auto table-scroll flex-1">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50/60 text-slate-500 border-b border-slate-100">
+                  ${cfg.cols.map(c => `<th class="py-2 px-3 font-semibold">${escapeHtml(c)}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                ${cfg.rows.length ? cfg.rows.map(r => `
+                  <tr class="hover:bg-slate-50">
+                    ${cfg.mapRow(r).map(cell => `<td class="py-2 px-3 whitespace-nowrap">${cell}</td>`).join('')}
+                  </tr>
+                `).join('') : `<tr><td colspan="${cfg.cols.length}" class="py-4 text-center text-slate-400">No rows loaded</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `).join('');
+
+      grid.querySelectorAll('[data-select-code]').forEach(btn => {
+        btn.addEventListener('click', () => selectMaterial(btn.getAttribute('data-select-code')));
+      });
+    }
+
+    function renderDirectLinks() {
+      const container = document.getElementById('direct-links-grid');
+      container.innerHTML = SHEET_DEFS.map(def => `
+        <a href="${def.url}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition group">
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-slate-900 group-hover:text-indigo-700 truncate">${escapeHtml(def.title)}</div>
+            <div class="text-[11px] text-slate-500 truncate">${escapeHtml(def.badge)} Sheet</div>
+          </div>
+          <span class="shrink-0 text-xs font-semibold text-indigo-600">&nearr;</span>
+        </a>
+      `).join('');
+    }
+
+    // =========================================================================
+    // 8. LIVE GOOGLE APPS SCRIPT CONNECTION
+    // =========================================================================
+    const modal = document.getElementById('connect-modal');
+    const inputGasUrl = document.getElementById('input-gas-url');
+    const connectStatus = document.getElementById('connect-status');
+    const dataSourceBadge = document.getElementById('data-source-badge');
+    const btnRefresh = document.getElementById('btn-refresh');
+
+    function setBadge(isLive, label) {
+      if (isLive) {
+        dataSourceBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200';
+        dataSourceBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span>${escapeHtml(label || 'Live Google Sheets')}`;
+        btnRefresh.classList.remove('hidden');
+        btnRefresh.classList.add('inline-flex');
+      } else {
+        dataSourceBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200';
+        dataSourceBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span>${escapeHtml(label || 'Sample Snapshot')}`;
+        btnRefresh.classList.add('hidden');
+        btnRefresh.classList.remove('inline-flex');
+      }
+    }
+
+    async function loadLiveData(url) {
+      if (!url || !url.startsWith('https://')) {
+        throw new Error('Please enter a valid https:// Google Apps Script Web App URL.');
+      }
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status} while fetching Google Sheets API`);
+      const json = await res.json();
+      if (!json || !Array.isArray(json.catalog)) {
+        throw new Error('Invalid JSON structure returned by Apps Script.');
+      }
+      DB = {
+        catalog: json.catalog || [],
+        indents: json.indents || [],
+        grns: json.grns || [],
+        issues: json.issues || [],
+        stock: json.stock || []
+      };
+      setBadge(true, `Live (${DB.catalog.length} items)`);
+      renderMiniViews();
+      if (selectedItemCode) selectMaterial(selectedItemCode);
+    }
+
+    document.getElementById('btn-open-connect').addEventListener('click', () => {
+      inputGasUrl.value = gasUrl;
+      connectStatus.classList.add('hidden');
+      modal.classList.remove('hidden');
+    });
+
+    [document.getElementById('btn-close-modal'), document.getElementById('btn-cancel-modal')].forEach(b => {
+      b.addEventListener('click', () => modal.classList.add('hidden'));
+    });
+
+    document.getElementById('btn-use-sample').addEventListener('click', () => {
+      gasUrl = '';
+      try { localStorage.removeItem('mash_material_tracker_gas_url'); } catch {}
+      DB = JSON.parse(JSON.stringify(SAMPLE_DATA));
+      setBadge(false, 'Sample Snapshot');
+      renderMiniViews();
+      if (selectedItemCode) selectMaterial(selectedItemCode);
+      modal.classList.add('hidden');
+    });
+
+    document.getElementById('btn-save-gas').addEventListener('click', async () => {
+      const url = inputGasUrl.value.trim();
+      connectStatus.className = 'p-2.5 rounded-lg text-xs bg-blue-50 text-blue-800 border border-blue-200';
+      connectStatus.textContent = 'Connecting to Google Apps Script...';
+      connectStatus.classList.remove('hidden');
+      try {
+        await loadLiveData(url);
+        gasUrl = url;
+        try { localStorage.setItem('mash_material_tracker_gas_url', url); } catch {}
+        modal.classList.add('hidden');
+      } catch (err) {
+        connectStatus.className = 'p-2.5 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-200';
+        connectStatus.textContent = err.message || 'Failed to load live data.';
+      }
+    });
+
+    btnRefresh.addEventListener('click', async () => {
+      if (!gasUrl) return;
+      btnRefresh.textContent = 'Refreshing...';
+      try {
+        await loadLiveData(gasUrl);
+      } catch (err) {
+        setBadge(false, 'Sync Error (Using Cache)');
+      } finally {
+        btnRefresh.textContent = 'Refresh Live';
+      }
+    });
+
+    // =========================================================================
+    // 9. INITIALIZATION
+    // =========================================================================
+    renderMiniViews();
+    renderDirectLinks();
+    if (gasUrl) {
+      loadLiveData(gasUrl).catch(() => setBadge(false, 'Sample Snapshot'));
+    }
+  </script>
+</body>
+</html>

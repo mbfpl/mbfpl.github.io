@@ -681,10 +681,18 @@
         { tab: 'Pipe & Fittings', code: 'PIPE&FITTING-0022', desc: 'MS PIPE 32 NB CLASS - B', uom: 'MTR', opening: 120, inward: 250, issued: 12, closing: 358 }
       ],
       docLinks: {
-        po2627: {
-          '11454': 'https://drive.google.com/file/d/1J4g6ssXowHYSbNDLbXUltPd4KMwfWf2w/view?usp=drivesdk',
-          '11455': 'https://drive.google.com/file/d/12YLtdv6SJ0LHz6s1Ylbfa8OSjDOSPch_/view?usp=drivesdk',
-          '11457': 'https://drive.google.com/file/d/1m-D0TlbVyRhkujxYADCxTtye2gHp7jAQ/view?usp=drivesdk'
+        sapPo: {
+          '12296': 'https://drive.google.com/file/d/1UIpgsS5w_DiyhVTQxyjgYf3qarDW7cUm/view?usp=drivesdk',
+          '12328': 'https://drive.google.com/file/d/17oV1FMpyPQJWLMcj9IItkfy4Km3WMfg_/view?usp=drivesdk'
+        },
+        tallyPo2526: {
+          '1340': 'https://drive.google.com/file/d/1JYwv0o4yB3_YX_YpNEua8KbqZg0BtUCi/view?usp=drivesdk',
+          '1337': 'https://drive.google.com/file/d/1y3xHZvTmLd-WBDJ8DBX568TZb0GgBmaK/view?usp=drivesdk'
+        },
+        tallyPo2627: {
+          '11317': 'https://drive.google.com/file/d/1mDF8T8rvUB3dm55eYQkehwcamG0_saX9/view?usp=drivesdk',
+          '11254': 'https://drive.google.com/file/d/16swnHGOXoI7dxZKeG9eQxSyXzC3R2UTL/view?usp=drivesdk',
+          '11248': 'https://drive.google.com/file/d/1LkBnqY4jC87njZX3ExBP6Ee12YiEFecN/view?usp=drivesdk'
         },
         grn2627: {
           '1155': 'https://drive.google.com/file/d/14xIGlRH7AjN6TbAza0BVKpkOg77tdhPH/view?usp=drivesdk',
@@ -750,11 +758,32 @@
       return '2627';
     }
 
-    function getPoPdfUrl(poToken) {
+    function getPoPdfUrl(poToken, fyBucket, poTypeHint) {
       const docs = DB.docLinks || {};
-      const numKey = String(poToken || '').toUpperCase().replace(/^T-/, '').replace(/^0+/, '');
-      if (!numKey || !docs.po2627) return null;
-      return docs.po2627[numKey] || null;
+      const raw = String(poToken || '').trim().toUpperCase();
+      const isExplicitTally = raw.startsWith('T-') || raw.startsWith('WO-') || poTypeHint === 'tally';
+      const isExplicitSap = raw.startsWith('SAP') || poTypeHint === 'sap';
+      const m = raw.match(/(\d+)/);
+      if (!m) return null;
+      const numKey = String(m[1]).replace(/^0+/, '') || '0';
+
+      if (isExplicitSap) {
+        return (docs.sapPo && docs.sapPo[numKey]) || null;
+      }
+      if (isExplicitTally) {
+        if (fyBucket === '2526' && docs.tallyPo2526 && docs.tallyPo2526[numKey]) return docs.tallyPo2526[numKey];
+        if (docs.tallyPo2627 && docs.tallyPo2627[numKey]) return docs.tallyPo2627[numKey];
+        if (docs.tallyPo2526 && docs.tallyPo2526[numKey]) return docs.tallyPo2526[numKey];
+        return (docs.po2627 && docs.po2627[numKey]) || null;
+      }
+      // Auto-resolve based on FY bucket & available maps
+      if (fyBucket === '2627') {
+        return (docs.tallyPo2627 && docs.tallyPo2627[numKey]) || (docs.sapPo && docs.sapPo[numKey]) || (docs.tallyPo2526 && docs.tallyPo2526[numKey]) || null;
+      }
+      if (fyBucket === '2526') {
+        return (docs.tallyPo2526 && docs.tallyPo2526[numKey]) || (docs.sapPo && docs.sapPo[numKey]) || (docs.tallyPo2627 && docs.tallyPo2627[numKey]) || null;
+      }
+      return (docs.sapPo && docs.sapPo[numKey]) || (docs.tallyPo2526 && docs.tallyPo2526[numKey]) || (docs.tallyPo2627 && docs.tallyPo2627[numKey]) || null;
     }
 
     function getGrnPdfUrl(grnToken, fyBucket) {
@@ -766,13 +795,13 @@
       return (docs.grn2627 && docs.grn2627[numKey]) || (docs.grn2526 && docs.grn2526[numKey]) || (docs.grn2425 && docs.grn2425[numKey]) || null;
     }
 
-    function renderPoLinksHtml(rawPoStr) {
+    function renderPoLinksHtml(rawPoStr, fyBucket, poTypeHint) {
       const raw = String(rawPoStr || '').trim();
       if (!raw || raw === '-') return '-';
       const parts = raw.split(/([\/,&\s]+)/);
       return parts.map(part => {
         if (/^[\/,&\s]+$/.test(part)) return escapeHtml(part);
-        const url = getPoPdfUrl(part);
+        const url = getPoPdfUrl(part, fyBucket, poTypeHint);
         if (url) {
           return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-indigo-700 hover:text-indigo-900 underline decoration-indigo-300 font-semibold" title="Open PO PDF (${escapeHtml(part)})">${escapeHtml(part)} &nearr;</a>`;
         }
@@ -1050,7 +1079,7 @@
               <div class="text-[11px] text-slate-500">${escapeHtml(ind.costCentre || '')}</div>
             </td>
             <td class="py-2.5 px-3 text-right font-semibold">${formatNum(ind.qty)} ${escapeHtml(ind.uom)}</td>
-            <td class="py-2.5 px-3 font-mono-code font-medium text-slate-800">${renderPoLinksHtml(ind.poNo)}</td>
+            <td class="py-2.5 px-3 font-mono-code font-medium text-slate-800">${renderPoLinksHtml(ind.poNo, indFy)}</td>
             <td class="py-2.5 px-3">${grnSummary}</td>
             <td class="py-2.5 px-3 text-slate-700">${escapeHtml(vendors)}</td>
             <td class="py-2.5 px-3 text-right font-semibold text-indigo-700">${linkedGrns.length ? formatNum(linkedQty) + ' ' + escapeHtml(ind.uom) : '-'}</td>
@@ -1078,7 +1107,7 @@
           <td class="py-2 px-3 font-mono-code font-semibold">${escapeHtml(r.indentNo)}</td>
           <td class="py-2 px-3">${escapeHtml(r.type)}</td>
           <td class="py-2 px-3 text-right font-semibold">${formatNum(r.qty)}</td>
-          <td class="py-2 px-3 font-mono-code">${renderPoLinksHtml(r.poNo)}</td>
+          <td class="py-2 px-3 font-mono-code">${renderPoLinksHtml(r.poNo, inferFyBucket(r.tab, r.date))}</td>
           <td class="py-2 px-3 font-mono-code">${renderGrnRefLinksHtml(r.grnNo, inferFyBucket(r.tab, r.date))}</td>
           <td class="py-2 px-3">${statusBadge(r.status)}</td>
           <td class="py-2 px-3">${escapeHtml(r.dept)}</td>
@@ -1093,8 +1122,8 @@
           <td class="py-2 px-3 text-slate-500">${escapeHtml(r.fy)}</td>
           <td class="py-2 px-3 font-mono-code font-semibold">${renderGrnRefLinksHtml(r.grnNo, inferFyBucket(r.fy, r.date))}</td>
           <td class="py-2 px-3">${escapeHtml(r.date)}</td>
-          <td class="py-2 px-3 font-mono-code">${renderPoLinksHtml(r.tallyPo)}</td>
-          <td class="py-2 px-3 font-mono-code">${escapeHtml(r.sapPo || '-')}</td>
+          <td class="py-2 px-3 font-mono-code">${renderPoLinksHtml(r.tallyPo, inferFyBucket(r.fy, r.date), 'tally')}</td>
+          <td class="py-2 px-3 font-mono-code">${renderPoLinksHtml(r.sapPo, inferFyBucket(r.fy, r.date), 'sap')}</td>
           <td class="py-2 px-3 font-medium text-slate-800">${escapeHtml(r.vendor)}</td>
           <td class="py-2 px-3 font-mono-code">${escapeHtml(r.invoiceNo || '-')}</td>
           <td class="py-2 px-3 text-right font-semibold">${formatNum(r.recdQty ?? r.qty)}</td>

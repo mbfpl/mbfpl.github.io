@@ -679,7 +679,27 @@
         { tab: 'CHEMICAL', code: 'ARMPC-000-000-076', desc: 'UREA', uom: 'KG', opening: 2000, inward: 36000, issued: 18000, closing: 20000 },
         { tab: 'Fuel', code: 'FUEL-LUBR-00-0001', desc: 'DIESEL', uom: 'LTR', opening: 3200, inward: 2500, issued: 1030, closing: 4670 },
         { tab: 'Pipe & Fittings', code: 'PIPE&FITTING-0022', desc: 'MS PIPE 32 NB CLASS - B', uom: 'MTR', opening: 120, inward: 250, issued: 12, closing: 358 }
-      ]
+      ],
+      docLinks: {
+        po2627: {
+          '11454': 'https://drive.google.com/file/d/1J4g6ssXowHYSbNDLbXUltPd4KMwfWf2w/view?usp=drivesdk',
+          '11455': 'https://drive.google.com/file/d/12YLtdv6SJ0LHz6s1Ylbfa8OSjDOSPch_/view?usp=drivesdk',
+          '11457': 'https://drive.google.com/file/d/1m-D0TlbVyRhkujxYADCxTtye2gHp7jAQ/view?usp=drivesdk'
+        },
+        grn2627: {
+          '1155': 'https://drive.google.com/file/d/14xIGlRH7AjN6TbAza0BVKpkOg77tdhPH/view?usp=drivesdk',
+          '1184': 'https://drive.google.com/file/d/1WXlrb0GLuXZeL4xBTVEVa4BUdZBeQ0f_/view?usp=drivesdk',
+          '1189': 'https://drive.google.com/file/d/1ikRgC1P2ExESo2kzTbLENtjNBFPpQUYs/view?usp=drivesdk'
+        },
+        grn2526: {
+          '726': 'https://drive.google.com/file/d/18av82EpgzK5sGs-K7c8nHarvf4ImxuUT/view?usp=drivesdk',
+          '1559': 'https://drive.google.com/file/d/1Oto24MmEQ598n4HI0b-NZB4h4qRqBo_J/view?usp=drivesdk'
+        },
+        grn2425: {
+          '1252': 'https://drive.google.com/file/d/1cV0ZAkPNuLFJssQwkK8dGxcHoIYe_iic/view?usp=drivesdk',
+          '1286': 'https://drive.google.com/file/d/1L3lwtFLjMdSn6dgcv852133NW05plPrb/view?usp=drivesdk'
+        }
+      }
     };
 
     // =========================================================================
@@ -720,6 +740,58 @@
         .map(t => stripPrefix ? t.replace(/^T-/, '').replace(/^SAP$/, '') : t)
         .map(t => t.trim())
         .filter(t => t && t !== '-' && t !== 'SAP');
+    }
+
+    function inferFyBucket(fyOrTab, dateStr) {
+      const s = `${fyOrTab || ''} ${dateStr || ''}`.toUpperCase();
+      if (s.includes('26-27') || s.includes('OCT 26') || s.includes('APR 26') || s.includes('MIN/MAX') && !s.includes('OLD') || s.includes('2026')) return '2627';
+      if (s.includes('25-26') || s.includes('OCT 25') || s.includes('APRIL 25') || s.includes('APR 25') || s.includes('OLD') || s.includes('2025')) return '2526';
+      if (s.includes('24-25') || s.includes('OCT 24') || s.includes('APR 24') || s.includes('2024')) return '2425';
+      return '2627';
+    }
+
+    function getPoPdfUrl(poToken) {
+      const docs = DB.docLinks || {};
+      const numKey = String(poToken || '').toUpperCase().replace(/^T-/, '').replace(/^0+/, '');
+      if (!numKey || !docs.po2627) return null;
+      return docs.po2627[numKey] || null;
+    }
+
+    function getGrnPdfUrl(grnToken, fyBucket) {
+      const docs = DB.docLinks || {};
+      const numKey = String(grnToken || '').toUpperCase().replace(/^GRN[-_\s]*/, '').replace(/^0+/, '');
+      if (!numKey) return null;
+      const mapName = `grn${fyBucket || '2627'}`;
+      if (docs[mapName] && docs[mapName][numKey]) return docs[mapName][numKey];
+      return (docs.grn2627 && docs.grn2627[numKey]) || (docs.grn2526 && docs.grn2526[numKey]) || (docs.grn2425 && docs.grn2425[numKey]) || null;
+    }
+
+    function renderPoLinksHtml(rawPoStr) {
+      const raw = String(rawPoStr || '').trim();
+      if (!raw || raw === '-') return '-';
+      const parts = raw.split(/([\/,&\s]+)/);
+      return parts.map(part => {
+        if (/^[\/,&\s]+$/.test(part)) return escapeHtml(part);
+        const url = getPoPdfUrl(part);
+        if (url) {
+          return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-indigo-700 hover:text-indigo-900 underline decoration-indigo-300 font-semibold" title="Open PO PDF (${escapeHtml(part)})">${escapeHtml(part)} &nearr;</a>`;
+        }
+        return escapeHtml(part);
+      }).join('');
+    }
+
+    function renderGrnRefLinksHtml(rawGrnStr, fyBucket) {
+      const raw = String(rawGrnStr || '').trim();
+      if (!raw || raw === '-') return '-';
+      const parts = raw.split(/([\/,&\s]+)/);
+      return parts.map(part => {
+        if (/^[\/,&\s]+$/.test(part)) return escapeHtml(part);
+        const url = getGrnPdfUrl(part, fyBucket);
+        if (url) {
+          return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-indigo-700 hover:text-indigo-900 underline decoration-indigo-300 font-semibold" title="Open GRN PDF (#${escapeHtml(part)})">${escapeHtml(part)} &nearr;</a>`;
+        }
+        return escapeHtml(part);
+      }).join('');
     }
 
     function escapeHtml(str) {
@@ -954,9 +1026,17 @@
 
         if (linkedGrns.length) matchedLinkCount++;
         const linkedQty = linkedGrns.reduce((s, g) => s + (Number(g.recdQty) || Number(g.qty) || 0), 0);
+        const indFy = inferFyBucket(ind.tab, ind.date);
         const grnSummary = linkedGrns.length
-          ? linkedGrns.map(g => `<span class="inline-block font-mono-code bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded mr-1 mb-0.5">GRN ${g.grnNo ? '#' + escapeHtml(g.grnNo) : ''}${g.date ? ' (' + escapeHtml(g.date) + ')' : ''}</span>`).join('')
-          : (ind.grnNo ? `<span class="font-mono-code text-slate-600">Ref: ${escapeHtml(ind.grnNo)}</span>` : '<span class="text-slate-400">No GRN linked yet</span>');
+          ? linkedGrns.map(g => {
+              const gFy = inferFyBucket(g.fy, g.date);
+              const gUrl = getGrnPdfUrl(g.grnNo, gFy);
+              const label = `GRN ${g.grnNo ? '#' + escapeHtml(g.grnNo) : ''}${g.date ? ' (' + escapeHtml(g.date) + ')' : ''}`;
+              return gUrl
+                ? `<a href="${gUrl}" target="_blank" rel="noopener noreferrer" class="inline-block font-mono-code bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded mr-1 mb-0.5 underline decoration-indigo-300 font-semibold" title="Open GRN PDF">${label} &nearr;</a>`
+                : `<span class="inline-block font-mono-code bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded mr-1 mb-0.5">${label}</span>`;
+            }).join('')
+          : (ind.grnNo ? `<span class="font-mono-code text-slate-600">Ref: ${renderGrnRefLinksHtml(ind.grnNo, indFy)}</span>` : '<span class="text-slate-400">No GRN linked yet</span>');
         const vendors = [...new Set(linkedGrns.map(g => g.vendor).filter(Boolean))].join(', ') || '-';
 
         return `
@@ -970,7 +1050,7 @@
               <div class="text-[11px] text-slate-500">${escapeHtml(ind.costCentre || '')}</div>
             </td>
             <td class="py-2.5 px-3 text-right font-semibold">${formatNum(ind.qty)} ${escapeHtml(ind.uom)}</td>
-            <td class="py-2.5 px-3 font-mono-code font-medium text-slate-800">${escapeHtml(ind.poNo || '-')}</td>
+            <td class="py-2.5 px-3 font-mono-code font-medium text-slate-800">${renderPoLinksHtml(ind.poNo)}</td>
             <td class="py-2.5 px-3">${grnSummary}</td>
             <td class="py-2.5 px-3 text-slate-700">${escapeHtml(vendors)}</td>
             <td class="py-2.5 px-3 text-right font-semibold text-indigo-700">${linkedGrns.length ? formatNum(linkedQty) + ' ' + escapeHtml(ind.uom) : '-'}</td>
@@ -998,8 +1078,8 @@
           <td class="py-2 px-3 font-mono-code font-semibold">${escapeHtml(r.indentNo)}</td>
           <td class="py-2 px-3">${escapeHtml(r.type)}</td>
           <td class="py-2 px-3 text-right font-semibold">${formatNum(r.qty)}</td>
-          <td class="py-2 px-3 font-mono-code">${escapeHtml(r.poNo || '-')}</td>
-          <td class="py-2 px-3 font-mono-code">${escapeHtml(r.grnNo || '-')}</td>
+          <td class="py-2 px-3 font-mono-code">${renderPoLinksHtml(r.poNo)}</td>
+          <td class="py-2 px-3 font-mono-code">${renderGrnRefLinksHtml(r.grnNo, inferFyBucket(r.tab, r.date))}</td>
           <td class="py-2 px-3">${statusBadge(r.status)}</td>
           <td class="py-2 px-3">${escapeHtml(r.dept)}</td>
           <td class="py-2 px-3">${escapeHtml(r.costCentre)}</td>
@@ -1011,9 +1091,9 @@
       document.getElementById('tbody-grns').innerHTML = grns.length ? grns.map(r => `
         <tr class="hover:bg-slate-50">
           <td class="py-2 px-3 text-slate-500">${escapeHtml(r.fy)}</td>
-          <td class="py-2 px-3 font-mono-code font-semibold">${escapeHtml(r.grnNo)}</td>
+          <td class="py-2 px-3 font-mono-code font-semibold">${renderGrnRefLinksHtml(r.grnNo, inferFyBucket(r.fy, r.date))}</td>
           <td class="py-2 px-3">${escapeHtml(r.date)}</td>
-          <td class="py-2 px-3 font-mono-code">${escapeHtml(r.tallyPo || '-')}</td>
+          <td class="py-2 px-3 font-mono-code">${renderPoLinksHtml(r.tallyPo)}</td>
           <td class="py-2 px-3 font-mono-code">${escapeHtml(r.sapPo || '-')}</td>
           <td class="py-2 px-3 font-medium text-slate-800">${escapeHtml(r.vendor)}</td>
           <td class="py-2 px-3 font-mono-code">${escapeHtml(r.invoiceNo || '-')}</td>
@@ -1358,7 +1438,7 @@
       loadingOverlay.classList.add('hidden');
     }
 
-    const SLICE_KEYS = ['catalog', 'indents', 'grn2627', 'grn2526', 'grn2425', 'issues', 'stock'];
+    const SLICE_KEYS = ['catalog', 'indents', 'grn2627', 'grn2526', 'grn2425', 'issues', 'stock', 'docLinks'];
 
     function openTrackerDB() {
       return new Promise((resolve, reject) => {
@@ -1407,7 +1487,8 @@
           ...(slices.grn2425 || [])
         ],
         issues: slices.issues || [],
-        stock: slices.stock || []
+        stock: slices.stock || [],
+        docLinks: slices.docLinks || SAMPLE_DATA.docLinks || {}
       };
       renderMiniViews();
       if (selectedItemCode) selectMaterial(selectedItemCode, false);
@@ -1437,7 +1518,7 @@
       let hasAllLocal = true;
       for (const k of SLICE_KEYS) {
         const cached = await idbGet(k);
-        if (Array.isArray(cached)) localSlices[k] = cached;
+        if (cached && (Array.isArray(cached) || (k === 'docLinks' && typeof cached === 'object'))) localSlices[k] = cached;
         else hasAllLocal = false;
       }
 
@@ -1462,7 +1543,7 @@
         }
 
         const remoteMeta = (metaJson && metaJson.meta) ? metaJson.meta : {};
-        const changedKeys = SLICE_KEYS.filter(k => !Array.isArray(localSlices[k]) || !remoteMeta[k] || Number(remoteMeta[k]) > Number(localMeta[k] || 0));
+        const changedKeys = SLICE_KEYS.filter(k => !localSlices[k] || !remoteMeta[k] || Number(remoteMeta[k]) > Number(localMeta[k] || 0));
 
         // 3. Download ONLY changed slices
         if (changedKeys.length > 0) {
@@ -1476,7 +1557,7 @@
           const updatedMeta = (getJson && getJson.meta) ? getJson.meta : remoteMeta;
 
           for (const k of changedKeys) {
-            if (Array.isArray(newData[k])) {
+            if (newData[k] && (Array.isArray(newData[k]) || typeof newData[k] === 'object')) {
               localSlices[k] = newData[k];
               await idbSet(k, newData[k]);
             }

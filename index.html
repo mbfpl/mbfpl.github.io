@@ -710,7 +710,16 @@
     }
 
     function normPo(s) {
-      return String(s || '').trim().toUpperCase().replace(/^T-/, '');
+      return String(s || '').trim().toUpperCase().replace(/^T-/, '').replace(/^SAP\s*/, '');
+    }
+
+    function extractTokens(s, stripPrefix = false) {
+      return String(s || '')
+        .toUpperCase()
+        .split(/[\/,&()\s]+/)
+        .map(t => stripPrefix ? t.replace(/^T-/, '').replace(/^SAP$/, '') : t)
+        .map(t => t.trim())
+        .filter(t => t && t !== '-' && t !== 'SAP');
     }
 
     function escapeHtml(str) {
@@ -920,17 +929,33 @@
       document.getElementById('kpi-issue').textContent = `${formatNum(totalIssued)} ${item.uom || ''}`;
       document.getElementById('kpi-issue-count').textContent = `${issues.length} issue slip(s)`;
 
-      // Link Indents <-> GRNs by ITEM CODE + PO NO
+      // Link Indents <-> GRNs by Material Code: match GRN No first, then PO No
       let matchedLinkCount = 0;
       const linksHtml = indents.map(ind => {
-        const poKey = normPo(ind.poNo);
-        const linkedGrns = poKey
-          ? grns.filter(g => normPo(g.tallyPo) === poKey || normPo(g.sapPo) === poKey)
-          : [];
+        const indGrnTokens = extractTokens(ind.grnNo, false);
+        const indPoTokens = extractTokens(ind.poNo, true);
+
+        let linkedGrns = [];
+        if (indGrnTokens.length) {
+          linkedGrns = grns.filter(g => {
+            const gNo = String(g.grnNo || '').trim().toUpperCase();
+            return gNo && indGrnTokens.includes(gNo);
+          });
+        }
+        if (!linkedGrns.length && indPoTokens.length) {
+          linkedGrns = grns.filter(g => {
+            const gPoTokens = [
+              ...extractTokens(g.tallyPo, true),
+              ...extractTokens(g.sapPo, true)
+            ];
+            return gPoTokens.some(tp => indPoTokens.includes(tp));
+          });
+        }
+
         if (linkedGrns.length) matchedLinkCount++;
-        const linkedQty = linkedGrns.reduce((s, g) => s + (Number(g.recdQty ?? g.qty) || 0), 0);
+        const linkedQty = linkedGrns.reduce((s, g) => s + (Number(g.recdQty) || Number(g.qty) || 0), 0);
         const grnSummary = linkedGrns.length
-          ? linkedGrns.map(g => `<span class="inline-block font-mono-code bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded mr-1 mb-0.5">GRN #${escapeHtml(g.grnNo)} (${escapeHtml(g.date)})</span>`).join('')
+          ? linkedGrns.map(g => `<span class="inline-block font-mono-code bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded mr-1 mb-0.5">GRN ${g.grnNo ? '#' + escapeHtml(g.grnNo) : ''}${g.date ? ' (' + escapeHtml(g.date) + ')' : ''}</span>`).join('')
           : (ind.grnNo ? `<span class="font-mono-code text-slate-600">Ref: ${escapeHtml(ind.grnNo)}</span>` : '<span class="text-slate-400">No GRN linked yet</span>');
         const vendors = [...new Set(linkedGrns.map(g => g.vendor).filter(Boolean))].join(', ') || '-';
 
@@ -1156,7 +1181,7 @@
           count: DB.indents.length,
           cols: ['Indent', 'Item Code', 'Qty', 'PO No', 'Status'],
           mapRow: r => [
-            `${escapeHtml(r.indentNo)} <span class="text-slate-400">(${escapeHtml(r.date)})</span>`,
+            `${escapeHtml(r.indentNo)}${r.date ? ` <span class="text-slate-400">(${escapeHtml(r.date)})</span>` : ""}`,
             `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `${formatNum(r.qty)} ${escapeHtml(r.uom)}`,
             `<span class="font-mono-code">${escapeHtml(r.poNo || '-')}</span>`,
@@ -1169,11 +1194,11 @@
           count: DB.grns.filter(g => g.fy === 'GRN 26-27').length,
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
-            `#${escapeHtml(r.grnNo)}`,
+            `${r.grnNo ? "#" + escapeHtml(r.grnNo) : "-"}`,
             `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
-            `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
+            `<span class="font-mono-code">${escapeHtml([r.tallyPo, r.sapPo].filter(Boolean).join(" / ") || "-")}</span>`
           ]
         },
         {
@@ -1182,11 +1207,11 @@
           count: DB.grns.filter(g => g.fy === 'GRN 25-26').length,
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
-            `#${escapeHtml(r.grnNo)}`,
+            `${r.grnNo ? "#" + escapeHtml(r.grnNo) : "-"}`,
             `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
-            `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
+            `<span class="font-mono-code">${escapeHtml([r.tallyPo, r.sapPo].filter(Boolean).join(" / ") || "-")}</span>`
           ]
         },
         {
@@ -1195,11 +1220,11 @@
           count: DB.grns.filter(g => g.fy === 'GRN 24-25').length,
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
-            `#${escapeHtml(r.grnNo)}`,
+            `${r.grnNo ? "#" + escapeHtml(r.grnNo) : "-"}`,
             `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
-            `<span class="font-mono-code">${escapeHtml(r.tallyPo || r.sapPo || '-')}</span>`
+            `<span class="font-mono-code">${escapeHtml([r.tallyPo, r.sapPo].filter(Boolean).join(" / ") || "-")}</span>`
           ]
         },
         {
@@ -1208,7 +1233,7 @@
           count: DB.issues.length,
           cols: ['MIR / Date', 'Item Code', 'Qty', 'Dept', 'Issued To'],
           mapRow: r => [
-            `#${escapeHtml(r.mirNo)} <span class="text-slate-400">(${escapeHtml(r.date)})</span>`,
+            `#${escapeHtml(r.mirNo)}${r.date ? ` <span class="text-slate-400">(${escapeHtml(r.date)})</span>` : ""}`,
             `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `${formatNum(r.qty)} ${escapeHtml(r.uom)}`,
             escapeHtml(r.dept),

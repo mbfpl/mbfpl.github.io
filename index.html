@@ -1194,7 +1194,7 @@
           count: DB.grns.filter(g => g.fy === 'GRN 26-27').length,
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
-            `${r.grnNo ? "#" + escapeHtml(r.grnNo) : "-"}`,
+            `${r.grnNo ? "#" + escapeHtml(r.grnNo) : "-"}${r.date ? ` <span class="text-slate-400">(${escapeHtml(r.date)})</span>` : ""}`,
             `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
@@ -1207,7 +1207,7 @@
           count: DB.grns.filter(g => g.fy === 'GRN 25-26').length,
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
-            `${r.grnNo ? "#" + escapeHtml(r.grnNo) : "-"}`,
+            `${r.grnNo ? "#" + escapeHtml(r.grnNo) : "-"}${r.date ? ` <span class="text-slate-400">(${escapeHtml(r.date)})</span>` : ""}`,
             `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),
@@ -1220,7 +1220,7 @@
           count: DB.grns.filter(g => g.fy === 'GRN 24-25').length,
           cols: ['GRN', 'Item Code', 'Vendor', 'Qty', 'PO'],
           mapRow: r => [
-            `${r.grnNo ? "#" + escapeHtml(r.grnNo) : "-"}`,
+            `${r.grnNo ? "#" + escapeHtml(r.grnNo) : "-"}${r.date ? ` <span class="text-slate-400">(${escapeHtml(r.date)})</span>` : ""}`,
             `<button type="button" data-select-code="${escapeHtml(r.code)}" class="font-mono-code text-indigo-700 hover:underline font-semibold text-left">${escapeHtml(r.code)}</button>${repeatBadge(r)}`,
             `<span class="truncate max-w-[140px] inline-block align-bottom">${escapeHtml(r.vendor)}</span>`,
             formatNum(r.recdQty ?? r.qty),

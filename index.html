@@ -751,10 +751,24 @@
     }
 
     function inferFyBucket(fyOrTab, dateStr) {
-      const s = `${fyOrTab || ''} ${dateStr || ''}`.toUpperCase();
-      if (s.includes('26-27') || s.includes('OCT 26') || s.includes('APR 26') || s.includes('MIN/MAX') && !s.includes('OLD') || s.includes('2026')) return '2627';
-      if (s.includes('25-26') || s.includes('OCT 25') || s.includes('APRIL 25') || s.includes('APR 25') || s.includes('OLD') || s.includes('2025')) return '2526';
-      if (s.includes('24-25') || s.includes('OCT 24') || s.includes('APR 24') || s.includes('2024')) return '2425';
+      const tab = String(fyOrTab || '').toUpperCase();
+      if (tab.includes('26-27') || tab.includes('OCT 26') || tab.includes('APR 26')) return '2627';
+      if (tab.includes('25-26') || tab.includes('OCT 25') || tab.includes('APRIL 25') || tab.includes('APR 25') || tab.includes('MIN/MAX OLD')) return '2526';
+      if (tab.includes('24-25') || tab.includes('OCT 24') || tab.includes('APR 24')) return '2425';
+      if (tab.includes('MIN/MAX')) return '2627';
+
+      // Fallback to parsing DD-MM-YYYY / DD.MM.YYYY using Indian Financial Year (April -> March)
+      const dStr = String(dateStr || '').trim();
+      const m = dStr.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})$/);
+      if (m) {
+        const mo = Number(m[2]);
+        let y = Number(m[3]);
+        if (y < 100) y += 2000;
+        const fyStart = mo >= 4 ? y : y - 1;
+        if (fyStart === 2026) return '2627';
+        if (fyStart === 2025) return '2526';
+        if (fyStart === 2024) return '2425';
+      }
       return '2627';
     }
 
@@ -771,28 +785,28 @@
         return (docs.sapPo && docs.sapPo[numKey]) || null;
       }
       if (isExplicitTally) {
-        if (fyBucket === '2526' && docs.tallyPo2526 && docs.tallyPo2526[numKey]) return docs.tallyPo2526[numKey];
-        if (docs.tallyPo2627 && docs.tallyPo2627[numKey]) return docs.tallyPo2627[numKey];
-        if (docs.tallyPo2526 && docs.tallyPo2526[numKey]) return docs.tallyPo2526[numKey];
-        return (docs.po2627 && docs.po2627[numKey]) || null;
+        // Strict FY matching for Tally POs (never cross-link FY 26-27 to FY 25-26)
+        if (fyBucket === '2627') return (docs.tallyPo2627 && docs.tallyPo2627[numKey]) || null;
+        if (fyBucket === '2526') return (docs.tallyPo2526 && docs.tallyPo2526[numKey]) || null;
+        return null;
       }
-      // Auto-resolve based on FY bucket & available maps
+      // Plain number PO: check that exact FY's Tally PO folder or SAP PO folder
       if (fyBucket === '2627') {
-        return (docs.tallyPo2627 && docs.tallyPo2627[numKey]) || (docs.sapPo && docs.sapPo[numKey]) || (docs.tallyPo2526 && docs.tallyPo2526[numKey]) || null;
+        return (docs.tallyPo2627 && docs.tallyPo2627[numKey]) || (docs.sapPo && docs.sapPo[numKey]) || null;
       }
       if (fyBucket === '2526') {
-        return (docs.tallyPo2526 && docs.tallyPo2526[numKey]) || (docs.sapPo && docs.sapPo[numKey]) || (docs.tallyPo2627 && docs.tallyPo2627[numKey]) || null;
+        return (docs.tallyPo2526 && docs.tallyPo2526[numKey]) || (docs.sapPo && docs.sapPo[numKey]) || null;
       }
-      return (docs.sapPo && docs.sapPo[numKey]) || (docs.tallyPo2526 && docs.tallyPo2526[numKey]) || (docs.tallyPo2627 && docs.tallyPo2627[numKey]) || null;
+      return (docs.sapPo && docs.sapPo[numKey]) || null;
     }
 
+    // Strict FY GRN PDF lookup: ONLY checks the exact Financial Year's GRN folder
     function getGrnPdfUrl(grnToken, fyBucket) {
       const docs = DB.docLinks || {};
       const numKey = String(grnToken || '').toUpperCase().replace(/^GRN[-_\s]*/, '').replace(/^0+/, '');
-      if (!numKey) return null;
-      const mapName = `grn${fyBucket || '2627'}`;
-      if (docs[mapName] && docs[mapName][numKey]) return docs[mapName][numKey];
-      return (docs.grn2627 && docs.grn2627[numKey]) || (docs.grn2526 && docs.grn2526[numKey]) || (docs.grn2425 && docs.grn2425[numKey]) || null;
+      if (!numKey || !fyBucket) return null;
+      const mapName = `grn${fyBucket}`;
+      return (docs[mapName] && docs[mapName][numKey]) ? docs[mapName][numKey] : null;
     }
 
     function renderPoLinksHtml(rawPoStr, fyBucket, poTypeHint) {
@@ -1037,10 +1051,12 @@
         const indPoTokens = extractTokens(ind.poNo, true);
 
         let linkedGrns = [];
+        const indFy = inferFyBucket(ind.tab, ind.date);
         if (indGrnTokens.length) {
           linkedGrns = grns.filter(g => {
             const gNo = String(g.grnNo || '').trim().toUpperCase();
-            return gNo && indGrnTokens.includes(gNo);
+            const gFy = inferFyBucket(g.fy, g.date);
+            return gNo && gFy === indFy && indGrnTokens.includes(gNo);
           });
         }
         if (!linkedGrns.length && indPoTokens.length) {
@@ -1055,7 +1071,6 @@
 
         if (linkedGrns.length) matchedLinkCount++;
         const linkedQty = linkedGrns.reduce((s, g) => s + (Number(g.recdQty) || Number(g.qty) || 0), 0);
-        const indFy = inferFyBucket(ind.tab, ind.date);
         const grnSummary = linkedGrns.length
           ? linkedGrns.map(g => {
               const gFy = inferFyBucket(g.fy, g.date);

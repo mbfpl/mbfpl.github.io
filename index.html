@@ -1703,7 +1703,11 @@
       if (!gasUrl) return;
       btnRefresh.textContent = 'Refreshing...';
       try {
-        await loadLiveData(gasUrl);
+        const authParams = (authCreds && authCreds.user && authCreds.pass)
+          ? { user: authCreds.user, pass: authCreds.pass }
+          : {};
+        await fetch(buildGasUrl(gasUrl, { action: 'rebuild', key: 'stock', ...authParams }));
+        await loadLiveData(gasUrl, false);
       } catch (err) {
         setBadge(false, 'Sync Error (Using Cache)');
       } finally {
